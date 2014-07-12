@@ -10,7 +10,7 @@
 # Returns the list of all YudatunProducts.mk files.
 # $(call ) isn't necessary.
 #
-define _find-gotoos-products-files
+define _find-yudatun-products-files
 $(SRC_TARGET_DIR)/product/YudatunProducts.mk
 endef
 
@@ -38,7 +38,7 @@ endef
 # $(call ) isn't necessary.
 #
 define get-all-product-makefiles
-$(call get-product-makefiles, $(_find-gotoos-products-files))
+$(call get-product-makefiles, $(_find-yudatun-products-files))
 endef
 
 # ----------------------------------------------------

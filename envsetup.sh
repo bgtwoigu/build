@@ -42,10 +42,10 @@ function add_lunch_combo()
 }
 
 # add the defult one here
-add_lunch_combo gotoos_qemu-eng
-add_lunch_combo gotoos_qemu-userdebug
-add_lunch_combo gotoos_qt210-eng
-add_lunch_combo gotoos_qt210-userdebug
+add_lunch_combo yudatun_qemu-eng
+add_lunch_combo yudatun_qemu-userdebug
+add_lunch_combo yudatun_qt210-eng
+add_lunch_combo yudatun_qt210-userdebug
 
 VARIANT_CHOICES=(user userdebug eng)
 
@@ -57,14 +57,14 @@ function lunch()
         answer=$1
     else
         print_lunch_menu
-        echo -n "Which would you like? [gotoos_qemu-eng] "
+        echo -n "Which would you like? [yudatun_qemu-eng] "
         read answer
     fi
 
     local selection=
 
     if [ -z "$answer" ] ; then
-        selection="gotoos_qemu-eng"
+        selection="yudatun_qemu-eng"
     elif (echo -n $answer | grep -q -e "^[0-9][0-9]*$") ; then
         if [ $answer -le ${#LUNCH_MENU_CHOICES[@]} ] ; then
             selection=${LUNCH_MENU_CHOICES[$(($answer-1))]}
@@ -435,10 +435,10 @@ function check_build_dependence()
 {
     local path=`type -P $1`
     if [ ! -x "$path" ] ; then
-        echo "ERROR: build gotoos needs: $1."
+        echo "ERROR: build yudatun needs: $1."
         echo "Please try: sudo apt-get install $1"
     else
-        echo "Build gotoos needs \"$1\" was configed successfully."
+        echo "Build yudatun needs \"$1\" was configed successfully."
     fi
 }
 

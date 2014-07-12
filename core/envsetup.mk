@@ -168,7 +168,7 @@ TARGET_ROOT_OUT_UNSTRIPPED := $(TARGET_OUT_UNSTRIPPED)
 
 # About lua search paths
 LUA_PATH := usr/local/share/lua/5.2
-LUAUTILS_PATH := gotoos/luautils
+LUAUTILS_PATH := yudatun/luautils
 TARGET_ROOT_OUT_LUAUTILS := $(TARGET_ROOT_OUT)/$(LUA_PATH)/$(LUAUTILS_PATH)
 
 # -----------------------------------------------------------

@@ -6,8 +6,8 @@
 # published by the Free Software Foundation
 #
 
-$(call inherit-product,$(SRC_TARGET_DIR)/product/gotoos.mk)
-$(call inherit-product,$(SRC_TARGET_DIR)/product/gotoos_base.mk)
+$(call inherit-product,$(SRC_TARGET_DIR)/product/yudatun.mk)
+$(call inherit-product,$(SRC_TARGET_DIR)/product/yudatun_base.mk)
 
-PRODUCT_NAME := gotoos_qt210
-PRODUCT_DEVICE := qt210
+PRODUCT_NAME := yudatun_qemu
+PRODUCT_DEVICE := qemu

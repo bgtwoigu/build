@@ -9,11 +9,11 @@
 # Unbundled apps will be build with the most generic product config.
 ifneq ($(TARGET_BUILD_APPS),)
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/gotoos.mk \
-    $(LOCAL_DIR)/gotoos_qemu.mk
+    $(LOCAL_DIR)/yudatun.mk \
+    $(LOCAL_DIR)/yudatun_qemu.mk
 else
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/gotoos.mk \
-    $(LOCAL_DIR)/gotoos_qemu.mk \
-    $(LOCAL_DIR)/gotoos_qt210.mk
+    $(LOCAL_DIR)/yudatun.mk \
+    $(LOCAL_DIR)/yudatun_qemu.mk \
+    $(LOCAL_DIR)/yudatun_qt210.mk
 endif
