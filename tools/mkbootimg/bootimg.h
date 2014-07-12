@@ -36,7 +36,7 @@
  *    else: jump to kernel_addr
  */
 
-#define BOOT_MAGIC "GOTOOS!!"
+#define BOOT_MAGIC "YUDATUN!!"
 #define BOOT_MAGIC_SIZE  8
 #define BOOT_NAME_SIZE  16
 #define BOOT_ARGS_SIZE 512

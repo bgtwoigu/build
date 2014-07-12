@@ -164,7 +164,7 @@ function set_stuff_for_environment()
     set_paths
     set_sequence_number
 
-    export GOTOOS_BUILD_TOP=$(gettop)
+    export YUDATUN_BUILD_TOP=$(gettop)
 }
 
 function set_title()
@@ -187,7 +187,7 @@ function get_target_arch()
     get_build_var TARGET_ARCH
 }
 
-# This function sets GOTOOS_BUILD_PATHS to what it is adding
+# This function sets YUDATUN_BUILD_PATHS to what it is adding
 # to PATH, and the next time it is run, it removes that from PATH.
 # This is required so lunch can be run more than once and still have
 # working paths
@@ -200,19 +200,19 @@ function set_paths()
     fi
 
     # out with the old
-    if [ -n "$GOTOOS_BUILD_PATHS" ] ; then
-        export PATH=${PATH/$GOTOOS_BUILD_PATHS/}
+    if [ -n "$YUDATUN_BUILD_PATHS" ] ; then
+        export PATH=${PATH/$YUDATUN_BUILD_PATHS/}
     fi
 
-    platformss_dir=$(get_abs_build_var GOTOOS_COMPILERS)
-    gcc_platforms_dir=$(get_abs_build_var GOTOOS_GCC_COMPILER)
+    platformss_dir=$(get_abs_build_var YUDATUN_COMPILERS)
+    gcc_platforms_dir=$(get_abs_build_var YUDATUN_GCC_COMPILER)
 
     # defined in core/config.mk
     target_gcc_version=$(get_build_var TARGET_GCC_VERSION)
     export TARGET_GCC_VERSION=$target_gcc_version
 
     # defined in core/config.mk
-    export GOTOOS_EABI_TOOLCHAIN=
+    export YUDATUN_EABI_TOOLCHAIN=
     local ARCH=$(get_target_arch)
     case $ARCH in
         arm) toolchain_dir=arm-none-linux-gnueabi-$target_gcc_version/bin
@@ -224,19 +224,19 @@ function set_paths()
     esac
 
     if [ -d "$gcc_platforms_dir/$toolchain_dir" ] ; then
-        export GOTOOS_EABI_TOOLCHAIN=$gcc_platforms_dir/$toolchain_dir
+        export YUDATUN_EABI_TOOLCHAIN=$gcc_platforms_dir/$toolchain_dir
     fi
 
-    export GOTOOS_TOOLCHAIN=$GOTOOS_EABI_TOOLCHAIN
-    export GOTOOS_BUILD_PATHS=$(get_build_var GOTOOS_BUILD_PATHS):$GOTOOS_TOOLCHAIN:
-    export PATH=$GOTOOS_BUILD_PATHS$PATH
+    export YUDATUN_TOOLCHAIN=$YUDATUN_EABI_TOOLCHAIN
+    export YUDATUN_BUILD_PATHS=$(get_build_var YUDATUN_BUILD_PATHS):$YUDATUN_TOOLCHAIN:
+    export PATH=$YUDATUN_BUILD_PATHS$PATH
 
-    unset GOTOOS_PRODUCT_OUT
-    export GOTOOS_PRODUCT_OUT=$(get_abs_build_var PRODUCT_OUT)
-    export OUT=$GOTOOS_PRODUCT_OUT
+    unset YUDATUN_PRODUCT_OUT
+    export YUDATUN_PRODUCT_OUT=$(get_abs_build_var PRODUCT_OUT)
+    export OUT=$YUDATUN_PRODUCT_OUT
 
-    unset GOTOOS_HOST_OUT
-    export GOTOOS_HOST_OUT=$(get_abs_build_var HOST_OUT)
+    unset YUDATUN_HOST_OUT
+    export YUDATUN_HOST_OUT=$(get_abs_build_var HOST_OUT)
 }
 
 function set_sequence_number()

@@ -56,7 +56,7 @@ BUILD_HOST_SHARED_LIBRARY := $(BUILD_SYSTEM)/host_shared_library.mk
 #
 
 # These can be changed to modify both host and device modules.
-COMMON_GLOBAL_CFLAGS := -DGOTOOS -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith
+COMMON_GLOBAL_CFLAGS := -DYUDATUN -fmessage-length=0 -W -Wall -Wno-unused -Winit-self -Wpointer-arith
 COMMON_RELEASE_CFLAGS := -DNDEBUG -UDEBUG
 
 # list of flags to turn specific warnings in to errors

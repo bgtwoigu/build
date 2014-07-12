@@ -33,9 +33,9 @@ ifeq ($(TARGET_ARCH),arm)
   endif
 endif
 
-GOTOOS_BUILD_PATHS := $(GBP)
-GOTOOS_COMPILERS := platforms/$(HOST_COMPILER_TAG)
-GOTOOS_GCC_COMPILER := platforms/$(HOST_COMPILER_TAG)/arm-gcc
+YUDATUN_BUILD_PATHS := $(GBP)
+YUDATUN_COMPILERS := platforms/$(HOST_COMPILER_TAG)
+YUDATUN_GCC_COMPILER := platforms/$(HOST_COMPILER_TAG)/arm-gcc
 
 # The "dumpvar" stuff lets you say something like
 #
