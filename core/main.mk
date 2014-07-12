@@ -59,8 +59,8 @@ BUILD_SYSTEM := $(TOPDIR)build/core
 
 # ----------------------------------------------------------
 # This is the default target. It must be the first declared target.
-.PHONY: goto
-DEFAULT_GOAL := goto
+.PHONY: yudatun
+DEFAULT_GOAL := yudatun
 $(DEFAULT_GOAL):
 
 # Used to force goals to build. Only use for conditionally defined goals.
@@ -395,7 +395,7 @@ all_copied_headers: ;
 
 $(ALL_C_CPP_ETC_OBJECTS): | all_copied_headers
 
-# ALl the goto stuff, in directories
+# ALl the yudatun stuff, in directories
 .PHONY: files
 files: prebuilt \
        $(modules_to_install)
@@ -424,16 +424,16 @@ systemimage: $(INSTALLED_SYSTEMIMAGE_TARGET)
 all_modules: $(ALL_MODULES)
 
 # -----------------------------------------------------------
-# Building a full system-- the default is to build gotocore
-.PHONY: gotocore
-gotocore: \
+# Building a full system-- the default is to build yudatuncore
+.PHONY: yudatuncore
+yudatuncore: \
     $(INSTALLED_BOOTLOADER_TARGET) \
     $(INSTALLED_KERNEL_TARGET) \
     $(INSTALLED_BOOTIMAGE_TARGET) \
     $(INSTALLED_FILES_FILE) \
     systemimage \
 
-goto: gotocore
+yudatun: yudatuncore
 
 # -----------------------------------------------------------
 .PHONY: clean

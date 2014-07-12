@@ -24,7 +24,7 @@
 # sub-variables.
 ALL_MODULES :=
 
-# Full paths to targets that should be added to the "make goto"
+# Full paths to targets that should be added to the "make yudatun"
 # set of installed targets.
 ALL_DEFAULT_INSTALLED_MODULES :=
 

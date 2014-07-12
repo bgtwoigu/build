@@ -18,7 +18,7 @@ help:
 	@echo
 	@echo
 	@echo "-----------------------------------------------------"
-	@echo "goto                 Default target"
+	@echo "yudatun                 Default target"
 	@echo "clean                (aka clobber) equivalent to rm -rf out/"
 	@echo "help                 You're reading it ringht now"
 
