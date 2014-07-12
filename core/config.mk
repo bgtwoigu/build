@@ -31,7 +31,7 @@ SRC_HEADERS := \
     $(TOPDIR)libcore/include \
     $(TOPDIR)libcore/lua-5.2.2/src
 
-SRC_TARGET_DIR := $(TOPDIR)make/target
+SRC_TARGET_DIR := $(TOPDIR)build/target
 
 # -------------------------------------------------------------
 # Build system internal files

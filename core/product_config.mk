@@ -137,7 +137,7 @@ TARGET_DEVICE := $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEVICE)
 # The file at the source path sould be copied to the destination path
 # when building this product. <destination path> is relative to
 # $(PRODUCT_OUT), so it should look like, e.g., "etc/file.xml".
-# The rules for these copy steps are defined in make/core/Makefile.
+# The rules for these copy steps are defined in build/core/Makefile.
 # The optional :<owner> is used to indicate the owner of a vendor file.
 PRODUCT_COPY_FILES := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_COPY_FILES))

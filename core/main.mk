@@ -55,7 +55,7 @@ PWD := $(shell pwd)
 TOP := .
 TOPDIR :=
 
-BUILD_SYSTEM := $(TOPDIR)make/core
+BUILD_SYSTEM := $(TOPDIR)build/core
 
 # ----------------------------------------------------------
 # This is the default target. It must be the first declared target.
@@ -223,7 +223,7 @@ else # ONE_SHOT_MAKEFILE
 #
 
 subdir_makefiles := \
-    $(shell make/tools/miscs/findleaves.py \
+    $(shell build/tools/miscs/findleaves.py \
     --prune=$(OUT_DIR) --prune=.repo --prune=.git \
     $(subdirs) Yudatun.mk)
 
@@ -245,7 +245,7 @@ ifneq ($(filter-out $(GRANDFATHERED_ALL_PREBUILT), \
     $(warning * should not be used for new files.)
     $(warning * As an alternative, use PRODUCT_COPY_FILES in)
     $(warning * the appropriate product definition.)
-    $(warning * make/target/product/core.mk is the product)
+    $(warning * build/target/product/core.mk is the product)
     $(warning * definition used in all products.)
     $(warning *)
     $(foreach bad_prebuilt, \
@@ -369,7 +369,7 @@ modules_to_install := \
      )
 
 # ----------------------------------------------------------
-# make/core/Makefile contains extra stuff that we don't
+# build/core/Makefile contains extra stuff that we don't
 # want to pollute this top-level makefile with. It expects
 # that ALL_DEFAULT_INSTALLED_MODULES contains everything
 # that's built during the current make, but it also further

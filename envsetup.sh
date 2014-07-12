@@ -8,7 +8,7 @@
 function hmm()
 {
 cat <<EOF
-Invoke ". make/envsetup.sh" from your shell to add the following functions to your environment:
+Invoke ". build/envsetup.sh" from your shell to add the following functions to your environment:
 - lunch:    lunch <product_name>-<build_variant>.
 - croot:    changes directory to the top of the tree.
 - mm:       builds all of the modules in the current directory, but not their dependencies.
@@ -20,7 +20,7 @@ EOF
     T=$(gettop)
     local A
     A=""
-    for i in `cat $T/make/envsetup.sh | sed -n "/^function /s/function \([a-z_]*\).*/\1/p" | sort`; do
+    for i in `cat $T/build/envsetup.sh | sed -n "/^function /s/function \([a-z_]*\).*/\1/p" | sort`; do
         A="$A $i"
     done
     echo $A
@@ -138,7 +138,7 @@ function check_product()
         echo "Couldn't locate the top of the tree. Try setting TOP." >&2
         return
     fi
-    CALLED_FROM_SETUP=true BUILD_SYSTEM=make/core \
+    CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
         TARGET_BUILD_TYPE= \
@@ -262,8 +262,8 @@ function get_abs_build_var()
         echo "Couldn't locate the top of the tree. Try setting TOP." >&2
         return
     fi
-    (\cd $T; CALLED_FROM_SETUP=true BUILD_SYSTEM=make/core \
-        make --no-print-directory -C "$T" -f make/core/config.mk dumpvar-abs-$1)
+    (\cd $T; CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
+        make --no-print-directory -C "$T" -f build/core/config.mk dumpvar-abs-$1)
 }
 
 # Get the exact value of a build variable.
@@ -274,15 +274,15 @@ function get_build_var()
         echo "Couldn't locate the top of the tree. Try setting TOP." >&2
         return
     fi
-    CALLED_FROM_SETUP=true BUILD_SYSTEM=make/core \
-        make --no-print-directory -C "$T" -f make/core/config.mk dumpvar-$1
+    CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
+        make --no-print-directory -C "$T" -f build/core/config.mk dumpvar-$1
 }
 
 function mm()
 {
     # If we're sitting in the root of the build tree, just do a
     # normal make.
-    if [ -f make/core/envsetup.mk -a -f Makefile ]; then
+    if [ -f build/core/envsetup.mk -a -f Makefile ]; then
         make $@
     else
         # Find the closest Android.mk file.
@@ -295,14 +295,14 @@ function mm()
         elif [ ! "$M" ]; then
             echo "Couldn't locate a makefile from the current directory."
         else
-            ONE_SHOT_MAKEFILE=$M make -C $T -f make/core/main.mk all_modules $@
+            ONE_SHOT_MAKEFILE=$M make -C $T -f build/core/main.mk all_modules $@
         fi
     fi
 }
 
 function findmakefile()
 {
-    TOPFILE=make/core/envsetup.mk
+    TOPFILE=build/core/envsetup.mk
     local HERE=$PWD
     T=
     while [ \( ! \( -f $TOPFILE \) \) -a \( $PWD != "/" \) ]; do
@@ -357,7 +357,7 @@ function mmm()
                 fi
             fi
         done
-        ONE_SHOT_MAKEFILE="$MAKEFILE" make -C $T -f make/core/main.mk \
+        ONE_SHOT_MAKEFILE="$MAKEFILE" make -C $T -f build/core/main.mk \
             $DASH_ARGS $MODULES $ARGS
     else
         echo "Couldn't locate the top of the tree. Try setting TOP."
@@ -405,7 +405,7 @@ function check_path()
 
 function gettop()
 {
-    local TOPFILE=make/core/envsetup.mk
+    local TOPFILE=build/core/envsetup.mk
     if [ -n "$TOP" -a -f "$TOP/$TOPFILE" ] ; then
         echo $TOP
     else
@@ -418,7 +418,7 @@ function gettop()
             local HERE=$PWD
             T=
             # The following codes ensures that goto a directory which can
-            # found file "make/core/envsetup.mk"
+            # found file "build/core/envsetup.mk"
             while [ \( ! \( -f $TOPFILE \) \) -a \( $PWD != "/" \) ] ; do
                 \cd ..
                 T=$(PWD= /bin/pwd)

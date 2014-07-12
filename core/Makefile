@@ -209,7 +209,7 @@ define build-systemimage-target
   $(call generate-userimage-prop-dictinary, \
      $(systemimage_intermediates)/systemimage_info.txt, skip_fsck=true)
   $(hide) PATH=$(foreach p,$(INTERNAL_USERIMAGES_BINARY_PATHS),$(p):)$$PATH \
-    $(LUA) ./make/tools/mkimage/mkimage.lua \
+    $(LUA) ./build/tools/mkimage/mkimage.lua \
     $(TARGET_OUT) $(systemimage_intermediates)/systemimage_info.txt $(1)
 endef
 
