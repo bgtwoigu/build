@@ -135,8 +135,8 @@ TARGET_PROJECT_INCLUDES := $(SRC_HEADERS) $(TARGET_OUT_INTERMEDIATE_HEADERS)
 TARGET_GLOBAL_CFLAGS += $(COMMON_GLOBAL_CFLAGS)
 TARGET_RELEASE_CFLAGS += $(COMMON_RELEASE_CFLAGS)
 
-# Many host compilers don't support these flags, so we have to make sure to only
-# specify them for the target compilers checked in to the source tree.
+# Many host platformss don't support these flags, so we have to make sure to only
+# specify them for the target platformss checked in to the source tree.
 TARGET_GLOBAL_CFLAGS += $(TARGET_ERROR_FLAGS)
 
 TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS)

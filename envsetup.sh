@@ -204,8 +204,8 @@ function set_paths()
         export PATH=${PATH/$GOTOOS_BUILD_PATHS/}
     fi
 
-    compilers_dir=$(get_abs_build_var GOTOOS_COMPILERS)
-    gcc_compiler_dir=$(get_abs_build_var GOTOOS_GCC_COMPILER)
+    platformss_dir=$(get_abs_build_var GOTOOS_COMPILERS)
+    gcc_platforms_dir=$(get_abs_build_var GOTOOS_GCC_COMPILER)
 
     # defined in core/config.mk
     target_gcc_version=$(get_build_var TARGET_GCC_VERSION)
@@ -223,8 +223,8 @@ function set_paths()
             ;;
     esac
 
-    if [ -d "$gcc_compiler_dir/$toolchain_dir" ] ; then
-        export GOTOOS_EABI_TOOLCHAIN=$gcc_compiler_dir/$toolchain_dir
+    if [ -d "$gcc_platforms_dir/$toolchain_dir" ] ; then
+        export GOTOOS_EABI_TOOLCHAIN=$gcc_platforms_dir/$toolchain_dir
     fi
 
     export GOTOOS_TOOLCHAIN=$GOTOOS_EABI_TOOLCHAIN

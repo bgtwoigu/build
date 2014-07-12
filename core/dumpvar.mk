@@ -22,20 +22,20 @@ endif
 
 # Add the ARM toolchain bin dir if it actually exists
 ifeq ($(TARGET_ARCH),arm)
-  ifneq ($(wildcard $(PWD)/compiler/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin),)
+  ifneq ($(wildcard $(PWD)/platforms/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin),)
   # this should be copied to HOST_OUT_EXECUTABLES instead
-  GBP := $(GBP):$(PWD)/compiler/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin
+  GBP := $(GBP):$(PWD)/platforms/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin
   endif
 
-  ifneq ($(wildcard $(PWD)/compiler/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-eabi-$(TARGET_GCC_VERSION)/bin),)
+  ifneq ($(wildcard $(PWD)/platforms/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-eabi-$(TARGET_GCC_VERSION)/bin),)
   #
-  GBP := $(GBP):$(PWD)/compiler/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-eabi-$(TARGET_GCC_VERSION)/bin
+  GBP := $(GBP):$(PWD)/platforms/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-eabi-$(TARGET_GCC_VERSION)/bin
   endif
 endif
 
 GOTOOS_BUILD_PATHS := $(GBP)
-GOTOOS_COMPILERS := compiler/$(HOST_COMPILER_TAG)
-GOTOOS_GCC_COMPILER := compiler/$(HOST_COMPILER_TAG)/arm-gcc
+GOTOOS_COMPILERS := platforms/$(HOST_COMPILER_TAG)
+GOTOOS_GCC_COMPILER := platforms/$(HOST_COMPILER_TAG)/arm-gcc
 
 # The "dumpvar" stuff lets you say something like
 #

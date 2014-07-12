@@ -7,7 +7,7 @@
 #
 
 # -----------------------------------------------------------
-# Select a combo based on the compiler being used.
+# Select a combo based on the platforms being used.
 #
 # Inputs:
 #     combo_target -- prefix for final varables (HOST_ or TARGET_)

@@ -22,7 +22,7 @@
 # instructions a available in a given architecture version.
 #
 # The blocks also define specific arch_variant_cflags, which
-# include defines, and compiler settings for the given architecture
+# include defines, and platforms settings for the given architecture
 # version.
 #
 ifeq ($(strip $(TARGET_ARCH_VARIANT)),)
@@ -39,7 +39,7 @@ endif
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := compiler/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
+TARGET_TOOLCHAIN_ROOT := platforms/$(HOST_COMPILER_TAG)/arm-gcc/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
 TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/arm-none-linux-gnueabi-
 endif
 

@@ -57,8 +57,8 @@ endif
 endif
 
 #
-# This is the standard way to name a directory containng compiler host
-# objects. E.g., compiler/$(HOST_COMPILER_TAG)/arm-gcc
+# This is the standard way to name a directory containng platforms host
+# objects. E.g., platforms/$(HOST_COMPILER_TAG)/arm-gcc
 #
 ifeq ($(HOST_OS),linux)
 HOST_COMPILER_TAG := $(HOST_OS)-$(HOST_ARCH)
@@ -183,7 +183,7 @@ PRINT_BUILD_CONFIG := true
 endif
 
 # ------------------------------------------------------------
-COMPILER_PATH := $(TOPDIR)compiler/$(HOST_COMPILER_TAG)
+COMPILER_PATH := $(TOPDIR)platforms/$(HOST_COMPILER_TAG)
 
 TARGET_COMPILER_PATH := $(COMPILER_PATH)/arm-gcc
 TARGET_GNUEABI_PATH := $(TARGET_COMPILER_PATH)/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
