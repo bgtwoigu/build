@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Gotoos Open Source Project
+# Copyright (C) 2013 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -307,8 +307,8 @@ function findmakefile()
     T=
     while [ \( ! \( -f $TOPFILE \) \) -a \( $PWD != "/" \) ]; do
         T=`PWD= /bin/pwd`
-        if [ -f "$T/Gotoos.mk" ]; then
-            echo $T/Gotoos.mk
+        if [ -f "$T/Yudatun.mk" ]; then
+            echo $T/Yudatun.mk
             \cd $HERE
             return
         fi
@@ -333,15 +333,15 @@ function mmm()
                 MODULES=all_modules
             fi
             DIR=`echo $DIR | sed -e 's/:.*//' -e 's:/$::'`
-            if [ -f $DIR/Gotoos.mk ] ; then
+            if [ -f $DIR/Yudatun.mk ] ; then
                 TO_CHOP=`(\cd -P -- $T && pwd -P) | wc -c | tr -d ''`
                 TO_CHOP=`expr $TO_CHOP + 1`
                 START=`PWD= /bin/pwd`
                 MFILE=`echo $START | cut -c${TO_CHOP}-`
                 if [ "$MFILE" = "" ] ; then
-                    MFILE=$DIR/Gotoos.mk
+                    MFILE=$DIR/Yudatun.mk
                 else
-                    MFILE=$MFILE/$DIR/Gotoos.mk
+                    MFILE=$MFILE/$DIR/Yudatun.mk
                 fi
                 MAKEFILE="$MAKEFILE $MFILE"
             else
@@ -352,7 +352,7 @@ function mmm()
                 elif [ "$DIR" = dist ] ; then
                     ARGS="$ARGS dist"
                 else
-                    echo "No Gotoos.mk in $DIR"
+                    echo "No Yudatun.mk in $DIR"
                     return 1
                 fi
             fi

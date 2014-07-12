@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 The Gotoos Open Source Project
+ * Copyright (c) 2014 The Yudatun Open Source Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

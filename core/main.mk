@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Gotoos Open Source Project
+# Copyright (C) 2013 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -37,7 +37,7 @@ ifeq (0,$(shell expr $$(echo $(MAKE_VERSION) | sed "s/[^0-9\.].*//") = 3.81))
 ifeq (0,$(shell expr $$(echo $(MAKE_VERSION) | sed "s/[^0-9\.].*//") = 3.82))
 $(warning **********************************************************)
 $(warning * You are using version $(MAKE_VERSION) of make.)
-$(warning * Gotoos can only be built by versions 3.81 and 3.82.)
+$(warning * Yudatun can only be built by versions 3.81 and 3.82.)
 $(warning * see https://github.com/gotoos)
 $(warning **********************************************************)
 $(error stopping)
@@ -190,7 +190,7 @@ $(if $(filter tests,$(1)),,true)
 endef
 
 # ----------------------------------------------------------
-# Typical build; included any Gotoos.mk files we can find.
+# Typical build; included any Yudatun.mk files we can find.
 #
 subdirs := $(TOP)
 
@@ -225,7 +225,7 @@ else # ONE_SHOT_MAKEFILE
 subdir_makefiles := \
     $(shell make/tools/miscs/findleaves.py \
     --prune=$(OUT_DIR) --prune=.repo --prune=.git \
-    $(subdirs) Gotoos.mk)
+    $(subdirs) Yudatun.mk)
 
 $(foreach mk, $(subdir_makefiles), \
   $(info including $(mk) ...)$(eval include $(mk)))

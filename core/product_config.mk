@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Gotoos Open Source Project
+# Copyright (C) 2013 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -58,9 +58,9 @@ include $(BUILD_SYSTEM)/product.mk
 ifneq ($(strip $(TARGET_BUILD_APPS)),)
 # An unbundled app build needs only the core product makefiles.
 all_product_configs := $(call get-product-makefiles, \
-    $(SRC_TARGET_DIR)/product/GotoosProducts.mk)
+    $(SRC_TARGET_DIR)/product/YudatunProducts.mk)
 else
-# Read in all of the product definitions specified by the GotoosProduct.mk
+# Read in all of the product definitions specified by the YudatunProduct.mk
 # files in the tree.
 all_product_configs := $(get-all-product-makefiles)
 endif

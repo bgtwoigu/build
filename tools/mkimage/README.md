@@ -1,4 +1,4 @@
-The Gotoos Open Source Project -- mkimage.lua
+The Yudatun Open Source Project -- mkimage.lua
 ================================================================================
 
 How to make image with filesystem ?

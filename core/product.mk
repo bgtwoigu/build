@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Gotoos Open Source Project
+# Copyright (C) 2013 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -7,17 +7,17 @@
 #
 
 # -----------------------------------------------------
-# Returns the list of all GotoosProducts.mk files.
+# Returns the list of all YudatunProducts.mk files.
 # $(call ) isn't necessary.
 #
 define _find-gotoos-products-files
-$(SRC_TARGET_DIR)/product/GotoosProducts.mk
+$(SRC_TARGET_DIR)/product/YudatunProducts.mk
 endef
 
 #
 # Returns the sorted concatenation of PRODUCT_MAKEFILS
-# varables set in the given GotoosProduct.mk files.
-# $(1): the list of GotoosProduct.mk files.
+# varables set in the given YudatunProduct.mk files.
+# $(1): the list of YudatunProduct.mk files.
 #
 define get-product-makefiles
 $(sort \
@@ -34,7 +34,7 @@ endef
 
 #
 # Returns the sorted concatenation of all PRODUCT_MAKEFILES
-# variables set in all GotoosProducts.mk files
+# variables set in all YudatunProducts.mk files
 # $(call ) isn't necessary.
 #
 define get-all-product-makefiles
@@ -42,7 +42,7 @@ $(call get-product-makefiles, $(_find-gotoos-products-files))
 endef
 
 # ----------------------------------------------------
-# Returns the list of all product info from makefiles into GotoosProducts.mk
+# Returns the list of all product info from makefiles into YudatunProducts.mk
 #
 _product_var_list := \
     PRODUCT_NAME \

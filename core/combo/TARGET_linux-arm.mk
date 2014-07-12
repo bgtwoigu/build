@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Gotoos Open Source Project
+# Copyright (C) 2013 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -16,8 +16,8 @@
 # than ARMv5TE. Each value should correspond to a file named
 # $(BUILD_COMBOS)/arch/<name>.mk which must contain
 # makefile variable definitions similar to the preprocessor defines in
-# make/core/combo/include/arch/<combo>/GotoosConfig.h. Their
-# purpose is to allow module Gotoos.mk files to selectively compile
+# make/core/combo/include/arch/<combo>/YudatunConfig.h. Their
+# purpose is to allow module Yudatun.mk files to selectively compile
 # difference versions of code based upon the funtionality and
 # instructions a available in a given architecture version.
 #
