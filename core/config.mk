@@ -29,7 +29,7 @@ comma := ,
 SRC_HEADERS := \
     $(TOPDIR)core/include \
     $(TOPDIR)libcore/include \
-    $(TOPDIR)libcore/lua-5.2.2/src
+    $(TOPDIR)libcore/lua-5.2.3/src
 
 SRC_TARGET_DIR := $(TOPDIR)build/target
 
