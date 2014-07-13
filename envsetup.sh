@@ -442,6 +442,11 @@ function check_build_dependence()
     fi
 }
 
+function yudatun_upload()
+{
+    git push ssh://yudatun@review.gerrithub.io:29418/yudatun/$1 HEAD:refs/for/$2
+}
+
 if [ "x$SHELL" != "x/bin/bash" ] ; then
     case 'ps -o command -p $$' in
         *bash*)
