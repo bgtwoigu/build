@@ -39,7 +39,7 @@ endif
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := devtools/gcc/$(HOST_MACHINE_TAG)/target/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
+TARGET_TOOLCHAIN_ROOT := devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
 TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/arm-none-linux-gnueabi-
 endif
 

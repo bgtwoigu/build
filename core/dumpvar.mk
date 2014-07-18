@@ -22,19 +22,19 @@ endif
 
 # Add the ARM toolchain bin dir if it actually exists
 ifeq ($(TARGET_ARCH),arm)
-  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/target/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin),)
+  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin),)
   # this should be copied to HOST_OUT_EXECUTABLES instead
-  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/target/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin
+  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin
   endif
 
-  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/target/arm-none-eabi-$(TARGET_GCC_VERSION)/bin),)
-  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/target/arm-none-eabi-$(TARGET_GCC_VERSION)/bin
+  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-eabi-$(TARGET_GCC_VERSION)/bin),)
+  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-eabi-$(TARGET_GCC_VERSION)/bin
   endif
 endif
 
 YUDATUN_BUILD_PATHS := $(YBP)
 YUDATUN_GCC := devtools/gcc/$(HOST_MACHINE_TAG)
-YUDATUN_TARGET_GCC := devtools/gcc/$(HOST_MACHINE_TAG)/target
+YUDATUN_TARGET_GCC := devtools/gcc/$(HOST_MACHINE_TAG)/arm
 
 # The "dumpvar" stuff lets you say something like
 #
