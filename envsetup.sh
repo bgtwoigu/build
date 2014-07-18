@@ -204,8 +204,7 @@ function set_paths()
         export PATH=${PATH/$YUDATUN_BUILD_PATHS/}
     fi
 
-    platformss_dir=$(get_abs_build_var YUDATUN_COMPILERS)
-    gcc_platforms_dir=$(get_abs_build_var YUDATUN_GCC_COMPILER)
+    yudatun_target_gcc_dir=$(get_abs_build_var YUDATUN_TARGET_GCC)
 
     # defined in core/config.mk
     target_gcc_version=$(get_build_var TARGET_GCC_VERSION)
@@ -223,8 +222,8 @@ function set_paths()
             ;;
     esac
 
-    if [ -d "$gcc_platforms_dir/$toolchain_dir" ] ; then
-        export YUDATUN_EABI_TOOLCHAIN=$gcc_platforms_dir/$toolchain_dir
+    if [ -d "$yudatun_target_gcc_dir/$toolchain_dir" ] ; then
+        export YUDATUN_EABI_TOOLCHAIN=$yudatun_target_gcc_dir/$toolchain_dir
     fi
 
     export YUDATUN_TOOLCHAIN=$YUDATUN_EABI_TOOLCHAIN

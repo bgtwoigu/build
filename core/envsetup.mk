@@ -58,10 +58,10 @@ endif
 
 #
 # This is the standard way to name a directory containng platforms host
-# objects. E.g., platforms/$(HOST_COMPILER_TAG)/arm-gcc
+# objects. E.g., devtools/gcc/$(HOST_COMPILER_TAG)/target
 #
 ifeq ($(HOST_OS),linux)
-HOST_COMPILER_TAG := $(HOST_OS)-$(HOST_ARCH)
+HOST_MACHINE_TAG := $(HOST_OS)-$(HOST_ARCH)
 endif
 
 # ------------------------------------------------------------
@@ -183,9 +183,7 @@ PRINT_BUILD_CONFIG := true
 endif
 
 # ------------------------------------------------------------
-COMPILER_PATH := $(TOPDIR)platforms/$(HOST_COMPILER_TAG)
-
-TARGET_COMPILER_PATH := $(COMPILER_PATH)/arm-gcc
-TARGET_GNUEABI_PATH := $(TARGET_COMPILER_PATH)/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
+TARGET_GCC_PATH := $(TOPDIR)devtools/gcc/$(HOST_MACHINE_TAG)/target
+TARGET_GNUEABI_PATH := $(TARGET_GCC_PATH)/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
 TARGET_GNUEABI_LIBC_PATH := $(TARGET_GNUEABI_PATH)/arm-none-linux-gnueabi/libc
 TARGET_GNUEABI_BIN_PATH := $(TARGET_GNUEABI_PATH)/arm-none-linux-gnueabi/bin

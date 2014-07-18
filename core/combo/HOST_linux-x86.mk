@@ -15,7 +15,7 @@
 # software development kit (sdk) build, that's why we have "sdk"
 # in the path name.
 ifeq ($(strip $(HOST_TOOLCHAIN_PREFIX)),)
-HOST_TOOLCHAIN_PREFIX := platforms/tools/gcc-sdk
+HOST_TOOLCHAIN_PREFIX := devtools/tools/gcc-sdk
 endif
 
 # Don't do anything if the toolchain is not there
