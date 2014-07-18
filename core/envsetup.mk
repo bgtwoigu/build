@@ -166,11 +166,6 @@ TARGET_ROOT_OUT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_ROOT)
 
 TARGET_ROOT_OUT_UNSTRIPPED := $(TARGET_OUT_UNSTRIPPED)
 
-# About lua search paths
-LUA_PATH := usr/local/share/lua/5.2
-LUAUTILS_PATH := yudatun/luautils
-TARGET_ROOT_OUT_LUAUTILS := $(TARGET_ROOT_OUT)/$(LUA_PATH)/$(LUAUTILS_PATH)
-
 # -----------------------------------------------------------
 
 COMMON_MODULE_CLASSES := TARGET-NOTICE_FILES HOST-NOTICE_FILES
