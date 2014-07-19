@@ -15,6 +15,7 @@
 
 # Build a target string like "linux-arm" or "linux-x86'.
 combo_os_arch := $($(combo_target)OS)-$($(combo_target)ARCH)
+combo_os_clib := -$($(combo_target)CLIB)
 
 # -----------------------------------------------------------
 # Set reasonable defaults for the various variables
@@ -33,4 +34,7 @@ $(combo_target)SHARED_LIB_SUFFIX := .so
 $(combo_target)STATIC_LIB_SUFFIX := .a
 
 # Now include the combo for this specific target.
-include $(BUILD_COMBOS)/$(combo_target)$(combo_os_arch).mk
+ifeq (-,$(strip $(combo_os_clib)))
+combo_os_clib :=
+endif
+include $(BUILD_COMBOS)/$(combo_target)$(combo_os_arch)$(combo_os_clib).mk

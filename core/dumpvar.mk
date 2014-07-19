@@ -22,13 +22,13 @@ endif
 
 # Add the ARM toolchain bin dir if it actually exists
 ifeq ($(TARGET_ARCH),arm)
-  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin),)
+  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/$(TARGET_LINUX_EABI_PREFIX)-$(TARGET_GCC_VERSION)/bin),)
   # this should be copied to HOST_OUT_EXECUTABLES instead
-  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)/bin
+  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/$(TARGET_LINUX_EABI_PREFIX)-$(TARGET_GCC_VERSION)/bin
   endif
 
-  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-eabi-$(TARGET_GCC_VERSION)/bin),)
-  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-eabi-$(TARGET_GCC_VERSION)/bin
+  ifneq ($(wildcard $(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/$(TARGET_EABI_PREFIX)-$(TARGET_GCC_VERSION)/bin),)
+  YBP := $(YBP):$(PWD)/devtools/gcc/$(HOST_MACHINE_TAG)/arm/$(TARGET_EABI_PREFIX)-$(TARGET_GCC_VERSION)/bin
   endif
 endif
 

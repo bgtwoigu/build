@@ -209,12 +209,14 @@ function set_paths()
     # defined in core/config.mk
     target_gcc_version=$(get_build_var TARGET_GCC_VERSION)
     export TARGET_GCC_VERSION=$target_gcc_version
+    target_linux_eabi_prefix=$(get_build_var TARGET_LINUX_EABI_PREFIX)
+    export TARGET_LINUX_EABI_PREFIX=$target_linux_eabi_prefix
 
     # defined in core/config.mk
     export YUDATUN_EABI_TOOLCHAIN=
     local ARCH=$(get_target_arch)
     case $ARCH in
-        arm) toolchain_dir=arm-none-linux-gnueabi-$target_gcc_version/bin
+        arm) toolchain_dir=$target_linux_eabi_prefix-$target_gcc_version/bin
             ;;
         *)
             echo "Can't find toolchain for unknown architecture: $ARCH"

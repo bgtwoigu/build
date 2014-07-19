@@ -35,12 +35,24 @@ else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+ifeq ($(strip $(TARGET_LINUX_EABI_PREFIX_EXP)),)
+TARGET_LINUX_EABI_PREFIX := arm-none-linux-gnueabi
+else
+TARGET_LINUX_EABI_PREFIX := $(TARGET_LINUX_EABI_PREFIX_EXP)
+endif # TARGET_LINUX_EABI_PREFIX_EXP
+
+ifeq ($(strip $(TARGET_EABI_PREFIX_EXP)),)
+TARGET_EABI_PREFIX := arm-none-eabi
+else
+TARGET_EABI_PREFIX := $(TARGET_EABI_PREFIX_EXP)
+endif # TARGET_EABI_PREFIX_EXP
+
 # -----------------------------------------------------------
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := devtools/gcc/$(HOST_MACHINE_TAG)/arm/arm-none-linux-gnueabi-$(TARGET_GCC_VERSION)
-TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/arm-none-linux-gnueabi-
+TARGET_TOOLCHAIN_ROOT := devtools/gcc/$(HOST_MACHINE_TAG)/arm/$(TARGET_LINUX_EABI_PREFIX)-$(TARGET_GCC_VERSION)
+TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/$(TARGET_LINUX_EABI_PREFIX)-
 endif
 
 TARGET_CC := $(TARGET_TOOLS_PREFIX)gcc$(HOST_EXECUTABLE_SUFFIX)
