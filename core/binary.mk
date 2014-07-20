@@ -30,6 +30,8 @@ else
   endif
 endif
 
+LOCAL_NO_CRT := true
+
 # The following LOCAL_ variables will be modified in this file.
 # Because the same LOCAL_ variables may be used to define modules
 # for both 1st arch and and arch.
@@ -269,6 +271,7 @@ built_whole_libraries := \
 # -----------------------------------------------------------
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_LDFLAGS := $(LOCAL_LDFLAGS)
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_LDLIBS := $(LOCAL_LDLIBS)
+$(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_NO_CRT := $(strip $(LOCAL_NO_CRT)) $(LOCAL_NO_CRT_$(TARGET_ARCH))
 
 # -----------------------------------------------------------
 # this is really the way to get the files onto the command

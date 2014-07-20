@@ -14,7 +14,9 @@
 
 # The generic product target doesn't have any hardware-specific pieces.
 TARGET_ARCH := arm
-TARGET_CLIB := glibc
+TARGET_CPU_VARIANT := generic
+TARGET_CPU_ABI := armeabi
+TARGET_CPU_ABI2 :=
 
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_WITH_SELINUX := true

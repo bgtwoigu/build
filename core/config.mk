@@ -98,6 +98,17 @@ endif
 TARGET_DEVICE_DIR := $(patsubst %/,%,$(dir $(board_config_mk)))
 board_config_mk :=
 
+TARGET_CPU_ABI := $(strip $(TARGET_CPU_ABI))
+ifeq ($(TARGET_CPU_ABI),)
+  $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
+endif
+TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
+
+# $(1): os/arch
+define select-yudatun-config-h
+build/core/combo/include/arch/$(1)/YudatunConfig.h
+endef
+
 # -----------------------------------------------------------
 #
 combo_target := HOST_

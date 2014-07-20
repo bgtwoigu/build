@@ -162,7 +162,9 @@ _product_stash_var_list := $(_product_var_list) \
     TARGET_CPU_VARIANT \
     TARGET_COMPRESS_MODULE_SYMBOLS \
     TARGET_NO_BOOTLOADER \
-    TARGET_NO_KERNEL
+    TARGET_NO_KERNEL \
+    TARGET_CPU_ABI \
+    TARGET_CPU_ABI2
 
 _product_stash_var_list += \
     BOARD_KERNEL_CMDLINE \
