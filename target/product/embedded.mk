@@ -26,7 +26,8 @@ PRODUCT_PACKAGES += \
 CORE_LUA_FILES += \
     init.lua \
     services.lua \
-    actions.lua
+    actions.lua \
+    ueventd.lua
 
 PRODUCT_PACKAGES += $(CORE_LUA_FILES)
 
