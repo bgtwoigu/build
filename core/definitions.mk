@@ -232,6 +232,45 @@ define transform-prebuilt-to-target
 $(copy-file-to-target-with-cp)
 endef
 
+# Copy a prebuilt file to a target location, stripping "# comment" comments.
+define transform-prebuilt-to-target-strip-comments
+@echo "$(if $(PRIVATE_IS_HOST_MODULE),host,target) Prebuilt: $(PRIVATE_MODULE) ($@)"
+$(copy-file-to-target-strip-comments)
+endef
+
+# The same as copy-file-to-target, but strip out "# comment"-style
+# comments (for config files and such).
+define copy-file-to-target-strip-comments
+@mkdir -p $(dir $@)
+$(hide) sed -e 's/#.*$$//' -e 's/[ \t]*$$//' -e '/^$$/d' < $< > $@
+endef
+
+# ------------------------------------------------------------
+# On some platforms (MacOS), after copying a static
+# library, ranlib must be run to update an internal
+# timestamp!?!?!
+# ------------------------------------------------------------
+
+ifeq ($(HOST_RUN_RANLIB_AFTER_COPYING),true)
+define transform-host-ranlib-copy-hack
+    $(hide) ranlib $@ || true
+endef
+else
+define transform-host-ranlib-copy-hack
+@true
+endef
+endif
+
+ifeq ($(TARGET_RUN_RANLIB_AFTER_COPYING),true)
+define transform-ranlib-copy-hack
+    $(hide) ranlib $@
+endef
+else
+define transform-ranlib-copy-hack
+@true
+endef
+endif
+
 # -----------------------------------------------------------
 # Commands for running gcc to compile a C file.
 # -----------------------------------------------------------
