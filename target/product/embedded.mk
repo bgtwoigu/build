@@ -11,14 +11,10 @@
 # Open-Source part of the tree.
 
 PRODUCT_PACKAGES += \
-    sshd \
     init \
     libcutils \
     liblua \
     libclua \
-    libssh \
-    libssl \
-    libcrypto \
     libz \
     bash \
     busybox
