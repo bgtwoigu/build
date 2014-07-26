@@ -16,8 +16,7 @@ PRODUCT_PACKAGES += \
     liblua \
     libclua \
     libz \
-    bash \
-    busybox
+    bash
 
 CORE_LUA_FILES += \
     init.lua \

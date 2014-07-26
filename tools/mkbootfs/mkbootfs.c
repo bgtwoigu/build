@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include <private/yudatun_filesystem_config.h>
+#include <dac/fs_config.h>
 
 static void die(const char* why, ...)
 {
