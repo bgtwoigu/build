@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Yudatun Open Source Project
+# Copyright (C) 2014 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -28,19 +28,19 @@ TARGET_ARCH_VARIANT := armv5te
 endif
 
 ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
-TARGET_GCC_VERSION := 4.7.3
+TARGET_GCC_VERSION := 4.8
 else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
 ifeq ($(strip $(TARGET_LINUX_EABI_PREFIX_EXP)),)
-TARGET_LINUX_EABI_PREFIX := arm-none-linux-gnueabi
+TARGET_LINUX_EABI_PREFIX := arm-linux-androideabi
 else
 TARGET_LINUX_EABI_PREFIX := $(TARGET_LINUX_EABI_PREFIX_EXP)
 endif # TARGET_LINUX_EABI_PREFIX_EXP
 
 ifeq ($(strip $(TARGET_EABI_PREFIX_EXP)),)
-TARGET_EABI_PREFIX := arm-none-eabi
+TARGET_EABI_PREFIX := arm-eabi
 else
 TARGET_EABI_PREFIX := $(TARGET_EABI_PREFIX_EXP)
 endif # TARGET_EABI_PREFIX_EXP
@@ -197,8 +197,21 @@ else
   endif
 endif
 
+# ------------------------------------------------------------
+libc_root := thirdparty/bionic/libc
+libm_root := thirdparty/bionic/libm
+libstdc++_root := thirdparty/bionic/libstdc++
+kernel_headers_common := $(libc_root)/kernel/uapi
+kernel_headers_arch := $(libc_root)/kernel/uapi/asm-$(TARGET_ARCH)
+kernel_headers := $(kernel_headers_common) $(kernel_headers_arch)
 
-TARGET_C_INCLUDES :=
+TARGET_C_INCLUDES := \
+    $(libc_root)/arch-arm/include \
+    $(libc_root)/include \
+    $(libstdc++_root)/include \
+    $(kernel_headers) \
+    $(libm_root)/include \
+    $(libm_root)/include/arm
 
 TARGET_CRTBEGIN_STATIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_static.o
 TARGET_CRTBEGIN_DYNAMIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_dynamic.o
@@ -209,12 +222,13 @@ TARGET_CRTEND_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_so.o
 
 TARGET_STRIP_MODULE := true
 
-TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES :=
+TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc libstdc++ libm
 
 TARGET_CUSTOM_LD_COMMAND := true
 
 define transform-o-to-shared-lib-inner
 $(hide) $(PRIVATE_CXX) \
+    -nostdlib -Wl,-soname,$(notdir $@) \
     -Wl,--gc-sections \
     -shared \
     -Wl,-shared,-Bsymbolic \
@@ -237,8 +251,8 @@ $(hide) $(PRIVATE_CXX) \
 endef
 
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -fPIE -pie \
-    -Bdynamic \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
+    -Wl,-dynamic-linker,/system/bin/linker \
     -Wl,--gc-sections \
     -Wl,-z,nocopyreloc \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
@@ -262,7 +276,7 @@ $(hide) $(PRIVATE_CXX) -fPIE -pie \
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -static \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
     -Wl,--gc-sections \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
@@ -271,10 +285,10 @@ $(hide) $(PRIVATE_CXX) -static \
     $(PRIVATE_LDFLAGS) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
-    -Wl,--no-whole-archive \
-    -Wl,--start-group \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+	$(call normalize-target-libraries,$(filter-out %libc_nomalloc.a,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES)))) \
+	-Wl,--start-group \
+	$(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
+	$(call normalize-target-libraries,$(filter %libc_nomalloc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
     $(PRIVATE_TARGET_FDO_LIB) \
     $(PRIVATE_TARGET_LIBGCC) \
     -Wl,--end-group \

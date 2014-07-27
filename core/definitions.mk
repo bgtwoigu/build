@@ -312,6 +312,31 @@ $(hide) $(PRIVATE_CC) \
      -MD -MF $(patsubst %.o,%.d,$@) -o $@ $<
 endef
 
+# ---------------------------------------------------------
+# Commands for running gcc to compile a C++ file
+# ---------------------------------------------------------
+define transform-cpp-to-o
+@mkdir -p $(dir $@)
+@echo "target $(PRIVATE_ARM_MODE) C++: $(PRIVATE_MODULE) <= $<"
+$(hide) $(PRIVATE_CXX) \
+    $(addprefix -I , $(PRIVATE_C_INCLUDES)) \
+    $(addprefix -isystem ,\
+        $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+            $(filter-out $(PRIVATE_C_INCLUDES), \
+                $(PRIVATE_TARGET_PROJECT_INCLUDES) \
+                $(PRIVATE_TARGET_C_INCLUDES)))) \
+    -c \
+    $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+        $(PRIVATE_TARGET_GLOBAL_CFLAGS) \
+        $(PRIVATE_TARGET_GLOBAL_CPPFLAGS) \
+        $(PRIVATE_ARM_CFLAGS) \
+     ) \
+    $(PRIVATE_CFLAGS) \
+    $(PRIVATE_CPPFLAGS) \
+    $(PRIVATE_DEBUG_CFLAGS) \
+    -MD -MF $(patsubst %.o,%.d,$@) -o $@ $<
+endef
+
 # -----------------------------------------------------------
 # Commands for running gcc to compile a host C file.
 # -----------------------------------------------------------
@@ -497,7 +522,7 @@ define transform-o-to-static-lib
 @rm -f $@
 $(extract-and-include-target-whole-static-libs)
 @echo "target StaticLib: $(PRIVATE_MODULE) ($@)"
-$(call split-long-arguments, $(TARGET_AR) $(TARGET_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@,$(filter %.o,$^))
+$(call split-long-arguments, $(TARGET_AR) $(TARGET_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@,$(filter %.o, $^))
 endef
 
 define extract-and-include-target-whole-static-libs
@@ -508,7 +533,7 @@ endef
 # $(1): the full path of the source static library.
 define _extract-and-include-single-target-whole-static-lib
 @echo "preparing StaticLib: $(PRIVATE_MODULE) [including $(1)]"
-$(hide) ldir=$(PRIVATE_INTERMEDIATES_DIR)/WHOLE/$(basename $(notdir $(1)))_objs; \
+$(hide) ldir=$(PRIVATE_INTERMEDIATES_DIR)/WHOLE/$(basename $(notdir $(1)))_objs;\
     rm -rf $$ldir; \
     mkdir -p $$ldir; \
     filelist=; \
@@ -516,7 +541,9 @@ $(hide) ldir=$(PRIVATE_INTERMEDIATES_DIR)/WHOLE/$(basename $(notdir $(1)))_objs;
         $(TARGET_AR) p $(1) $$f > $$ldir/$$f; \
         filelist="$$filelist $$ldir/$$f"; \
     done ; \
-    $(TARGET_AR) $(TARGET_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@ $$filelist
+    $(TARGET_AR) $(TARGET_GLOBAL_ARFLAGS) \
+        $(PRIVATE_ARFLAGS) $@ $$filelist
+
 endef
 
 # -----------------------------------------------------------
@@ -610,4 +637,39 @@ define copy-one-file
 $(2): $(1)
 	@echo "Copy: $$@"
 	$$(copy-file-to-target-with-cp)
+endef
+
+# ---------------------------------------------------------
+# Find all of the S files under the named directories.
+# Meant to be used like:
+#    SRC_FILES := $(call all-c-files-under,src tests)
+# ---------------------------------------------------------
+
+define all-S-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find -L $(1) -name "*.S" -and -not -name ".*") \
+ )
+endef
+
+# ---------------------------------------------------------
+# Find all of the c files under the named directories.
+# Meant to be used like:
+#    SRC_FILES := $(call all-c-files-under,src tests)
+# --------------------------------------------------------
+
+define all-c-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find -L $(1) -name "*.c" -and -not -name ".*") \
+ )
+endef
+
+# ------------------------------------------------------------
+# Find all of the c files from here.  Meant to be used like:
+#    SRC_FILES := $(call all-subdir-c-files)
+# ------------------------------------------------------------
+
+define all-subdir-c-files
+$(call all-c-files-under,.)
 endef

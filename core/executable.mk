@@ -46,9 +46,11 @@ $(linked_module) : PRIVATE_TARGET_CRTEND_O := $(my_target_crtend_o)
 $(linked_module) : PRIVATE_TARGET_OUT_INTERMEDIATE_LIBRARIES := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 
 ifeq ($(LOCAL_FORCE_STATIC_EXECUTABLE),true)
-$(linked_module): $(all_objects) $(all_libraries)
+$(linked_module): $(all_objects) $(all_libraries) \
+                  $(my_target_crtbegin_static_o) $(my_target_crtend_o)
 	$(transform-o-to-static-executable)
 else
-$(linked_module): $(all_objects) $(all_libraries)
+$(linked_module): $(all_objects) $(all_libraries) \
+                  $(my_target_crtbegin_dynamic_o) $(my_target_crtend_o)
 	$(transform-o-to-executable)
 endif
