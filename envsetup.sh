@@ -365,6 +365,57 @@ function mmm()
     fi
 }
 
+function mma()
+{
+    local T=$(gettop)
+    local DRV=$(getdriver $T)
+    if [ -f build/core/envsetup.mk -a -f Makefile ]; then
+        $DRV make $@
+    else
+        if [ ! "$T" ]; then
+            echo "Couldn't locate the top of the tree.  Try setting TOP."
+        fi
+        local MY_PWD=`PWD= /bin/pwd|sed 's:'$T'/::'`
+        $DRV make -C $T -f build/core/main.mk $@ all_modules BUILD_MODULES_IN_PATHS="$MY_PWD"
+    fi
+}
+
+function mmma()
+{
+    local T=$(gettop)
+    local DRV=$(getdriver $T)
+    if [ "$T" ]; then
+        local DASH_ARGS=$(echo "$@" | awk -v RS=" " -v ORS=" " '/^-.*$/')
+        local DIRS=$(echo "$@" | awk -v RS=" " -v ORS=" " '/^[^-].*$/')
+        local MY_PWD=`PWD= /bin/pwd`
+        if [ "$MY_PWD" = "$T" ]; then
+            MY_PWD=
+        else
+            MY_PWD=`echo $MY_PWD|sed 's:'$T'/::'`
+        fi
+        local DIR=
+        local MODULE_PATHS=
+        local ARGS=
+        for DIR in $DIRS ; do
+            if [ -d $DIR ]; then
+                if [ "$MY_PWD" = "" ]; then
+                    MODULE_PATHS="$MODULE_PATHS $DIR"
+                else
+                    MODULE_PATHS="$MODULE_PATHS $MY_PWD/$DIR"
+                fi
+            else
+                case $DIR in
+                    showcommands | snod | dist | incrementaljavac) ARGS="$ARGS $DIR";;
+                    *) echo "Couldn't find directory $DIR"; return 1;;
+                esac
+            fi
+        done
+        $DRV make -C $T -f build/core/main.mk $DASH_ARGS $ARGS all_modules BUILD_MODULES_IN_PATHS="$MODULE_PATHS"
+    else
+        echo "Couldn't locate the top of the tree.  Try setting TOP."
+    fi
+}
+
 function croot()
 {
     T=$(gettop)

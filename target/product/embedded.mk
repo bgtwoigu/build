@@ -11,10 +11,16 @@
 # Open-Source part of the tree.
 
 PRODUCT_PACKAGES += \
-    init \
-    libcutils \
-    liblua \
+    libc \
+    libm \
+    libdl \
+    libthread_db \
+    libstdc++ \
+    linker \
     libclua \
+    liblua \
+    libcutils \
+    init \
     libz \
     bash
 
