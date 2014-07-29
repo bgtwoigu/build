@@ -426,7 +426,7 @@ function croot()
     fi
 }
 
-function emulator()
+function emulator-pb()
 {
     check_path qemu-system-arm
 
@@ -436,7 +436,17 @@ function emulator()
         -append "root=/dev/ram rdinit=/init"
 }
 
-function emulator-nographic()
+function emulator-a9()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
+        -kernel $1 \
+        -initrd $2 \
+        -append "root=/dev/ram rdinit=/init"
+}
+
+function emulator-nographic-pb()
 {
     check_path qemu-system-arm
 
