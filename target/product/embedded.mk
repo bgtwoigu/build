@@ -25,7 +25,7 @@ PRODUCT_PACKAGES += \
     bash
 
 CORE_RC_FILES += \
-    initramfs.rc \
+    init.rc \
     ueventd.rc
 
 PRODUCT_PACKAGES += $(CORE_RC_FILES)
