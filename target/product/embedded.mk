@@ -24,22 +24,8 @@ PRODUCT_PACKAGES += \
     libz \
     bash
 
-CORE_LUA_FILES += \
-    init.lua \
-    services.lua \
-    actions.lua \
-    ueventd.lua
+CORE_RC_FILES += \
+    initramfs.rc \
+    ueventd.rc
 
-PRODUCT_PACKAGES += $(CORE_LUA_FILES)
-
-
-ifeq (arm-none-linux-gnueabi, $(strip $(TARGET_LINUX_EABI_PREFIX)))
-
-PRODUCT_PACKAGES += \
-    ld-linux.so.3 \
-    libm.so.6 \
-    libc.so.6 \
-    libgcc_s.so.1 \
-    libstdc++.so.6
-
-endif # TARGET_LINUX_EABI_PREFIX
+PRODUCT_PACKAGES += $(CORE_RC_FILES)
