@@ -426,36 +426,6 @@ function croot()
     fi
 }
 
-function emulator-pb()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -M versatilepb -m 128M \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init"
-}
-
-function emulator-a9()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init"
-}
-
-function emulator-nographic-pb()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -nographic -M versatilepb -m 128M \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init console=ttyAMA0"
-}
-
 function check_path()
 {
     local path=`type -P $1`
@@ -507,6 +477,56 @@ function check_build_dependence()
 function yudatun_upload()
 {
     git push ssh://yudatun@review.gerrithub.io:29418/yudatun/$1 HEAD:refs/for/$2
+}
+
+function emulator-pb()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -M versatilepb -m 128M \
+        -kernel $1 \
+        -initrd $2 \
+        -append "root=/dev/ram rdinit=/init"
+}
+
+function emulator-a9()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
+        -kernel $1 \
+        -initrd $2 \
+        -append "root=/dev/ram rdinit=/init"
+}
+
+function emulator-nographic-pb()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -nographic -M versatilepb -m 128M \
+        -kernel $1 \
+        -initrd $2 \
+        -append "root=/dev/ram rdinit=/init console=ttyAMA0"
+}
+
+function emulator-nographic-a9()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -nographic -M vexpress-a9 -m 1024M -cpu cortex-a9 \
+        -kernel $1 \
+        -initrd $2 \
+        -append "root=/dev/ram rdinit=/init console=ttyAMA0"
+}
+
+function start()
+{
+    emulator-a9 $1 $2
+}
+
+function start-nographic()
+{
+    emulator-nographic-a9 $1 $2
 }
 
 if [ "x$SHELL" != "x/bin/bash" ] ; then

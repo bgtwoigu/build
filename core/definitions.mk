@@ -277,6 +277,7 @@ endif
 
 define transform-s-to-o
 $(transform-s-to-o-no-deps)
+$(transform-d-to-p)
 endef
 
 define transform-s-to-o-no-deps
@@ -286,6 +287,7 @@ endef
 
 define transform-c-to-o
 $(transform-c-to-o-no-deps)
+$(transform-d-to-p)
 endef
 
 define transform-c-to-o-no-deps
@@ -335,6 +337,7 @@ $(hide) $(PRIVATE_CXX) \
     $(PRIVATE_CPPFLAGS) \
     $(PRIVATE_DEBUG_CFLAGS) \
     -MD -MF $(patsubst %.o,%.d,$@) -o $@ $<
+$(transform-d-to-p)
 endef
 
 # -----------------------------------------------------------
@@ -343,6 +346,7 @@ endef
 
 define transform-host-c-to-o
 $(transform-host-c-to-o-no-deps)
+$(transform-d-to-p)
 endef
 
 define transform-host-c-to-o-no-deps
@@ -554,6 +558,22 @@ define transform-to-stripped
 @mkdir -p $(dir $@)
 @echo "target Strip: $(PRIVATE_MODULE) ($@)"
 $(hide) $(TARGET_STRIP_COMMAND)
+endef
+
+# -----------------------------------------------------------
+# Commands for munging the dependency files GCC generates
+# -----------------------------------------------------------
+# $(1): the input .d file
+# $(2): the output .P file
+define transform-d-to-p-args
+$(hide) cp $(1) $(2); \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < $(1) >> $(2); \
+	rm -f $(1)
+endef
+
+define transform-d-to-p
+$(call transform-d-to-p-args,$(@:%.o=%.d),$(@:%.o=%.P))
 endef
 
 # -----------------------------------------------------------
