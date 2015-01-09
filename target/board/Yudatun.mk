@@ -1,0 +1,1 @@
+-include $(TARGET_DEVICE_DIR)/YudatunBoard.mk
