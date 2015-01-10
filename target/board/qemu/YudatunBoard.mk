@@ -24,6 +24,8 @@ ifeq ($(strip $(KERNEL_VERSION)),)
   KERNEL_VERSION := 3.18.1
 endif
 
+TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
+
 include kernel/linux-$(KERNEL_VERSION)-qemu/YudatunKernel.mk
 
 $(INSTALLED_KERNEL_TARGET): $(TARGET_PREBUILT_KERNEL)
