@@ -10,22 +10,8 @@
 # This is a build configuration for a very minimal build of the
 # Open-Source part of the tree.
 
-PRODUCT_PACKAGES += \
-    libc \
-    libm \
-    libdl \
-    libthread_db \
-    libstdc++ \
-    linker \
-    libclua \
-    liblua \
-    libcutils \
-    init \
-    libz \
-    bash
+PRODUCT_PACKAGES +=
 
-CORE_RC_FILES += \
-    init.rc \
-    ueventd.rc
+CORE_RC_FILES +=
 
 PRODUCT_PACKAGES += $(CORE_RC_FILES)

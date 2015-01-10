@@ -427,11 +427,7 @@ all_modules: $(ALL_MODULES)
 # Building a full system-- the default is to build yudatuncore
 .PHONY: yudatuncore
 yudatuncore: \
-    $(INSTALLED_BOOTLOADER_TARGET) \
-    $(INSTALLED_KERNEL_TARGET) \
-    $(INSTALLED_BOOTIMAGE_TARGET) \
-    $(INSTALLED_FILES_FILE) \
-    systemimage \
+    $(INSTALLED_KERNEL_TARGET)
 
 yudatun: yudatuncore
 
