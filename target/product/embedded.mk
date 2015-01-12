@@ -10,8 +10,19 @@
 # This is a build configuration for a very minimal build of the
 # Open-Source part of the tree.
 
-PRODUCT_PACKAGES +=
+BIONIC_CORE := \
+    libc \
+    libm \
+    libdl \
+    linker \
 
-CORE_RC_FILES +=
+PRODUCT_PACKAGES := \
+    $(BIONIC_CORE) \
+    libcutils \
+    init \
 
-PRODUCT_PACKAGES += $(CORE_RC_FILES)
+RC_FILES := \
+    init.rc \
+    ueventd.rc \
+
+PRODUCT_PACKAGES += $(RC_FILES)

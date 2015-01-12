@@ -27,9 +27,7 @@ comma := ,
 # when a module links against a particular library.
 # TODO: See if we can remove most of these from the global list.
 SRC_HEADERS := \
-    $(TOPDIR)core/include \
-    $(TOPDIR)libcore/include \
-    $(TOPDIR)libcore/lua-5.2.3/src
+    $(TOPDIR)system/include
 
 SRC_TARGET_DIR := $(TOPDIR)build/target
 

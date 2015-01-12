@@ -59,20 +59,6 @@ $(INSTALLED_BOOTLOADER_TARGET): $(INTERNAL_BOOTLOADER_FILE)
 	$(copy-file-to-target-with-cp)
 
 # -----------------------------------------------------------
-# kernel
-#ifneq ($(strip $(TARGET_NO_KERNEL)), true)
-#  INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
-#else
-#  INSTALLED_KERNEL_TARGET :=
-#endif
-
-#INTERNAL_KERNEL_FILE := $(TARGET_BOARDER_KERNEL)
-
-#$(INSTALLED_KERNEL_TARGET): $(INTERNAL_KERNEL_FILE)
-#	$(call pretty, "Target kernel: $< --> $@")
-#	$(copy-file-to-target-with-cp)
-
-# -----------------------------------------------------------
 # the initramfs
 INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_ROOT_OUT)/%, \
     $(ALL_DEFAULT_INSTALLED_MODULES)) \

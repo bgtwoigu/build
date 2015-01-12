@@ -407,7 +407,7 @@ bootloader: $(INSTALLED_BOOTLOADER_TARGET)
 kernel: $(INSTALLED_KERNEL_TARGET)
 
 .PHONY: initramfs
-ramdisk: $(INSTALLED_INITRAMFS_TARGET)
+initramfs: $(INSTALLED_INITRAMFS_TARGET)
 
 .PHONY: bootimage
 bootimage: $(INSTALLED_BOOTIMAGE_TARGET)
@@ -427,7 +427,8 @@ all_modules: $(ALL_MODULES)
 # Building a full system-- the default is to build yudatuncore
 .PHONY: yudatuncore
 yudatuncore: \
-    $(INSTALLED_KERNEL_TARGET)
+    $(INSTALLED_KERNEL_TARGET) \
+    $(INSTALLED_BOOTIMAGE_TARGET) \
 
 yudatun: yudatuncore
 
