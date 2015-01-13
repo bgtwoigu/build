@@ -519,14 +519,13 @@ function emulator-nographic-a9()
         -append "root=/dev/ram rdinit=/init console=ttyAMA0"
 }
 
-function start()
+function emulator-a9-serial()
 {
-    emulator-a9 $1 $2
-}
+    check_path qemu-system-arm
 
-function start-nographic()
-{
-    emulator-nographic-a9 $1 $2
+    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
+        -kernel $1 -initrd $2 \
+        -serial stdio -append "console=ttyAMA0"
 }
 
 if [ "x$SHELL" != "x/bin/bash" ] ; then
