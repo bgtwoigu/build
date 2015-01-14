@@ -50,7 +50,32 @@ my_cc := $(LOCAL_CC)
 my_cxx := $(LOCAL_CXX)
 my_c_includes := $(LOCAL_C_INCLUDES)
 my_generated_sources := $(LOCAL_GENERATED_SOURCES)
+my_clang := $(strip $(LOCAL_CLANG))
+ifdef LOCAL_CLANG_$(my_32_64_bit_suffix)
+my_clang := $(strip $(LOCAL_CLANG_$(my_32_64_bit_suffix)))
+endif
+ifdef LOCAL_CLANG_$($(my_prefix)ARCH)
+my_clang := $(strip $(LOCAL_CLANG_$($(my_prefix)ARCH)))
+endif
 
+# clang is enabled by default for host builds
+# enable it unless we've specifically disabled clang above
+ifdef LOCAL_IS_HOST_MODULE
+  ifneq ($(HOST_OS),windows)
+    ifeq ($(my_clang),)
+      my_clang := true
+    endif # my_clang
+  endif # HOST_OS
+endif
+
+# Add option to make clan the default for device build
+ifeq ($(USE_CLANG_PLATFORM_BUILD),true)
+  ifeq ($(my_clang),)
+    my_clang := true
+  endif
+endif # USE_CLANG_PLATFORM_BUILD
+
+#-------------------------------------------------------------------------------
 ifndef LOCAL_IS_HOST_MODULE
 
 my_src_files += \
@@ -89,17 +114,58 @@ my_whole_static_libraries := \
     $(LOCAL_WHOLE_STATIC_LIBRARIES_$(TARGET_ARCH)) \
     $(LOCAL_WHOLE_STATIC_LIBRARIES_$(my_32_64_bit_suffix)) \
     $(my_whole_static_libraries)
+
+my_cflags := $(filter-out $($(my_prefix)GLOBAL_UNSUPPORTED_CFLAGS),$(my_cflags))
+
+endif # !LOCAL_IS_HOST_MODULE
+
+#-------------------------------------------------------------------------------
+# add clang flags
+ifeq ($(strip $(LOCAL_ADDRESS_SANITIZER)),true)
+  my_clang := true
+  # Frame pointer based unwinder in ASan requires ARM frame setup.
+  LOCAL_ARM_MODE := arm
+  my_cflags += $(ADDRESS_SANITIZER_CONFIG_EXTRA_CFLAGS)
+  my_ldflags += $(ADDRESS_SANITIZER_CONFIG_EXTRA_LDFLAGS)
+  ifdef LOCAL_IS_HOST_MODULE
+      my_ldflags += $(ADDRESS_SANITIZER_CONFIG_EXTRA_LDFLAGS_HOST)
+      my_ldlibs += $(ADDRESS_SANITIZER_CONFIG_EXTRA_LDLIBS_HOST)
+      my_shared_libraries += \
+          $(ADDRESS_SANITIZER_CONFIG_EXTRA_SHARED_LIBRARIES_HOST)
+      my_static_libraries += \
+          $(ADDRESS_SANITIZER_CONFIG_EXTRA_STATIC_LIBRARIES_HOST)
+  else
+      my_ldflags += $(ADDRESS_SANITIZER_CONFIG_EXTRA_LDFLAGS_TARGET)
+      my_ldlibs += $(ADDRESS_SANITIZER_CONFIG_EXTRA_LDLIBS_TARGET)
+      my_shared_libraries += \
+          $(ADDRESS_SANITIZER_CONFIG_EXTRA_SHARED_LIBRARIES_TARGET)
+      my_static_libraries += \
+          $(ADDRESS_SANITIZER_CONFIG_EXTRA_STATIC_LIBRARIES_TARGET)
+  endif
+endif
+
+ifeq ($(strip $(WITHOUT_$(my_prefix)CLANG)),true)
+  my_clang :=
 endif
 
 # ------------------------------------------------------------
 # Define PRIVATE_ variables from global vars
 #
 ifndef LOCAL_IS_HOST_MODULE
+
 my_target_project_includes := $(TARGET_PROJECT_INCLUDES)
 my_target_c_includes := $(TARGET_C_INCLUDES)
+my_target_global_cppflags :=
+
+ifeq ($(my_clang),true)
+my_target_global_cflags := $(CLANG_TARGET_GLOBAL_CFLAGS)
+my_target_global_cppflags += $(CLANG_TARGET_GLOBAL_CPPFLAGS)
+my_target_global_ldflags := $(CLANG_TARGET_GLOBAL_LDFLAGS)
+else
 my_target_global_cflags := $(TARGET_GLOBAL_CFLAGS)
 my_target_global_cppflags += $(TARGET_GLOBAL_CPPFLAGS)
 my_target_global_ldflags := $(TARGET_GLOBAL_LDFLAGS)
+endif # my_clang
 
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_TARGET_PROJECT_INCLUDES := $(my_target_project_includes)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_TARGET_C_INCLUDES := $(my_target_c_includes)
@@ -107,12 +173,19 @@ $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_TARGET_GLOBAL_CFLAGS := $(my_target_globa
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_TARGET_GLOBAL_CPPFLAGS := $(my_target_global_cppflags)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_TARGET_GLOBAL_LDFLAGS := $(my_target_global_ldflags)
 
-else
+else # LOCAL_IS_HOST_MODULE
 
+ifeq ($(my_clang),true)
+my_host_global_cflags := $(CLANG_HOST_GLOBAL_CFLAGS)
+my_host_global_cppflags := $(CLANG_HOST_GLOBAL_CPPFLAGS)
+my_host_global_ldflags := $(CLANG_HOST_GLOBAL_LDFLAGS)
+my_host_c_includes := $(HOST_C_INCLUDES)
+else
 my_host_global_cflags := $(HOST_GLOBAL_CFLAGS)
 my_host_global_cppflags := $(HOST_GLOBAL_CPPFLAGS)
 my_host_global_ldflags := $(HOST_GLOBAL_LDFLAGS)
 my_host_c_includes := $(HOST_C_INCLUDES)
+endif # my_clang
 
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_HOST_C_INCLUDES := $(my_host_c_includes)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_HOST_GLOBAL_CFLAGS := $(my_host_global_cflags)
@@ -148,15 +221,24 @@ LOCAL_C_INCLUDES += $(TOPDIR)$(LOCAL_PATH) $(intermediates)
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_NO_DEFAULT_COMPILER_FLAGS := \
     $(strip $(LOCAL_NO_DEFAULT_COMPILER_FLAGS))
 
-ifeq ($(strip $(LOCAL_CC)),)
-  my_cc := $($(my_prefix)CC)
+ifeq ($(strip $(my_cc)),)
+  ifeq ($(my_clang),true)
+    my_cc := $(CLANG)
+  else
+    my_cc := $($(my_prefix)CC)
+  endif # my_clang
 endif
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_CC := $(my_cc)
 
-ifeq ($(strip $(LOCAL_CXX)),)
-  my_cxx := $($(my_prefix)CXX)
+ifeq ($(strip $(my_cxx)),)
+  ifeq ($(my_clang),true)
+    my_cxx := $(CLANG_CXX)
+  else
+    my_cxx := $($(my_prefix)CXX)
+  endif
 endif
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_CXX := $(my_cxx)
+$(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_CLANG := $(my_clang)
 
 # TODO: support a mix of standard extensions so that this isn't necessary
 LOCAL_CPP_EXTENSION := $(strip $(LOCAL_CPP_EXTENSION))
@@ -182,6 +264,11 @@ arm_objects_mode := $(if $(LOCAL_ARM_MODE),$(LOCAL_ARM_MODE),arm)
 normal_objects_mode := $(if $(LOCAL_ARM_MODE),$(LOCAL_ARM_MODE),thumb)
 arm_objects_cflags := $($(my_prefix)$(arm_objects_mode)_CFLAGS)
 normal_objects_cflags := $($(my_prefix)$(normal_objects_mode)_CFLAGS)
+
+ifeq ($(my_clang),true)
+arm_objects_cflags := $(call convert-to-$(my_host)clang-flags,$(arm_objects_cflags))
+normal_objects_cflags := $(call convert-to-$(my_host)clang-flags,$(normal_objects_cflags))
+endif
 
 else # TARGET_ARCH
 
@@ -418,6 +505,23 @@ built_whole_libraries := \
 # -----------------------------------------------------------
 # Rule-specific variable definitions
 # -----------------------------------------------------------
+
+ifeq ($(my_clang),true)
+my_cflags += $(LOCAL_CLANG_CFLAGS)
+my_cpplags += $(LOCAL_CLANG_CPPFLAGS)
+my_asflags += $(LOCAL_CLANG_ASFLAGS)
+my_ldflags += $(LOCAL_CLANG_LDFLAGS)
+my_cflags += $(LOCAL_CLANG_CFLAGS_$($(my_prefix)ARCH)) $(LOCAL_CLANG_CFLAGS_$(my_32_64_bit_suffix))
+my_cppflags += $(LOCAL_CLANG_CPPFLAGS_$($(my_prefix)ARCH)) $(LOCAL_CLANG_CPPFLAGS_$(my_32_64_bit_suffix))
+my_ldflags += $(LOCAL_CLANG_LDFLAGS_$($(my_prefix)ARCH)) $(LOCAL_CLANG_LDFLAGS_$(my_32_64_bit_suffix))
+my_asflags += $(LOCAL_CLANG_ASFLAGS_$($(my_prefix)ARCH)) $(LOCAL_CLANG_ASFLAGS_$(my_32_64_bit_suffix))
+
+my_cflags := $(call convert-to-$(my_host)clang-flags,$(my_cflags))
+my_cppflags := $(call convert-to-$(my_host)clang-flags,$(my_cppflags))
+my_asflags := $(call convert-to-$(my_host)clang-flags,$(my_asflags))
+my_ldflags := $(call convert-to-$(my_host)clang-flags,$(my_ldflags))
+endif
+
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_C_INCLUDES := $(my_c_includes)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_IMPORT_INCLUDES := $(import_includes)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_ASFLAGS := $(my_asflags)

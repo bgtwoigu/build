@@ -6,7 +6,7 @@
 # published by the Free Software Foundation
 #
 
-# ------------------------------------------------------------
+#-------------------------------------------------------------
 # Clear out values of all varables used by rule templates.
 #
 
@@ -67,7 +67,7 @@ LOCAL_WHOLE_STATIC_LIBRARIES_$(TARGET_ARCH):=
 LOCAL_GENERATED_SOURCES_$(TARGET_ARCH):=
 LOCAL_REQUIRED_MODULES_$(TARGET_ARCH):=
 
-# ------------------------------------------------------------
+#-------------------------------------------------------------
 LOCAL_SRC_FILES_32:=
 LOCAL_SRC_FILES_64:=
 LOCAL_SHARED_LIBRARIES_32:=
@@ -93,9 +93,42 @@ LOCAL_MODULE_PATH_64:=
 LOCAL_MODULE_STEM_32:=
 LOCAL_MODULE_STEM_64:=
 
-# ------------------------------------------------------------
+#-------------------------------------------------------------
 LOCAL_COPY_HEADERS_TO :=
 LOCAL_COPY_HEADERS :=
+
+#------------------------------------------------------------
+# About clang
+LOCAL_CLANG :=
+LOCAL_CLANG_32 :=
+LOCAL_CLANG_64 :=
+LOCAL_CLANG_$(TARGET_ARCH) :=
+LOCAL_CLANG_$(HOST_ARCH) :=
+LOCAL_ADDRESS_SANITIZER :=
+
+LOCAL_CLANG_CFLAGS :=
+LOCAL_CLANG_CFLAGS_$(HOST_ARCH):=
+LOCAL_CLANG_CFLAGS_$(TARGET_ARCH):=
+LOCAL_CLANG_CFLAGS_32:=
+LOCAL_CLANG_CFLAGS_64:=
+
+LOCAL_CLANG_CPPFLAGS :=
+LOCAL_CLANG_CPPFLAGS_$(HOST_ARCH):=
+LOCAL_CLANG_CPPFLAGS_$(TARGET_ARCH):=
+LOCAL_CLANG_CPPFLAGS_32:=
+LOCAL_CLANG_CPPFLAGS_64:=
+
+LOCAL_CLANG_ASFLAGS:=
+LOCAL_CLANG_ASFLAGS_$(HOST_ARCH):=
+LOCAL_CLANG_ASFLAGS_$(TARGET_ARCH):=
+LOCAL_CLANG_ASFLAGS_32:=
+LOCAL_CLANG_ASFLAGS_64:=
+
+LOCAL_CLANG_LDFLAGS:=
+LOCAL_CLANG_LDFLAGS_$(HOST_ARCH):=
+LOCAL_CLANG_LDFLAGS_$(TARGET_ARCH):=
+LOCAL_CLANG_LDFLAGS_32:=
+LOCAL_CLANG_LDFLAGS_64:=
 
 # ------------------------------------------------------------
 # Trim MAKEFILE_LIST so that $(call my-dir) doesn't need to

@@ -1,3 +1,11 @@
+#
+# Copyright (C) 2015 The Yudatun Open Source Project
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation
+#
+
 # Configuration for Linux on ARM.
 # Generating binaries for the ARMv5TE architecture and higher
 #
@@ -12,4 +20,3 @@ arch_variant_cflags := \
     -D__ARM_ARCH_5T__ \
     -D__ARM_ARCH_5E__ \
     -D__ARM_ARCH_5TE__
-

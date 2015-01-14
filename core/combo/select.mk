@@ -25,10 +25,13 @@ $(combo_target)STRIP := $(STRIP)
 
 $(combo_target)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
 $(combo_target)RELEASE_CFLAGS := -O2 -g -fno-strict-aliasing
+$(combo_var_prefix)GLOBAL_CPPFLAGS :=
 $(combo_target)GLOBAL_LDFLAGS :=
 $(combo_target)GLOBAL_ARFLAGS := crsP
+$(combo_var_prefix)GLOBAL_LD_DIRS :=
 
 $(combo_target)EXECUTABLE_SUFFIX :=
+$(combo_var_prefix)SHLIB_SUFFIX := .so
 $(combo_target)SHARED_LIB_SUFFIX := .so
 $(combo_target)STATIC_LIB_SUFFIX := .a
 

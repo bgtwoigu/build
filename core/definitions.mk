@@ -271,6 +271,10 @@ define transform-ranlib-copy-hack
 endef
 endif
 
+#-------------------------------------------------------------------------------
+# Target
+#-------------------------------------------------------------------------------
+
 # -----------------------------------------------------------
 # Commands for running gcc to compile a C file.
 # -----------------------------------------------------------
@@ -340,40 +344,8 @@ $(hide) $(PRIVATE_CXX) \
 $(transform-d-to-p)
 endef
 
-# -----------------------------------------------------------
-# Commands for running gcc to compile a host C file.
-# -----------------------------------------------------------
-
-define transform-host-c-to-o
-$(transform-host-c-to-o-no-deps)
-$(transform-d-to-p)
-endef
-
-define transform-host-c-to-o-no-deps
-@echo "host C: $(PRIVATE_MODULE) <= $<"
-$(call transform-host-c-or-s-to-o-no-deps,  $(PRIVATE_CFLAGS) $(PRIVATE_CONLYFLAGS) $(PRIVATE_DEBUG_CFLAGS))
-endef
-
-# $(1): extra flags
-define transform-host-c-or-s-to-o-no-deps
-@mkdir -p $(dir $@)
-$(hide) $(PRIVATE_CC) \
-    $(addprefix -I , $(PRIVATE_C_INCLUDES)) \
-    $(addprefix -isystem ,\
-       $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
-          $(filter-out $(PRIVATE_C_INCLUDES), \
-             $(HOST_PROJECT_INCLUDES) \
-             $(HOST_C_INCLUDES)))) \
-    -c \
-    $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
-         $(HOST_GLOBAL_CFLAGS) \
-     ) \
-     $(1) \
-     -MD -MF $(patsubst %.o,%.d,$@) -o $@ $<
-endef
-
 # ------------------------------------------------------------
-# Commands for running gcc to link an executable
+# Commands for running gcc to link a target executable
 # ------------------------------------------------------------
 define transform-o-to-executable
 @mkdir -p $(dir $@)
@@ -381,109 +353,30 @@ define transform-o-to-executable
 $(transform-o-to-executable-inner)
 endef
 
-ifneq ($(TARGET_CUSTOM_LD_COMMAND),true)
 define transform-o-to-executable-inner
-endef
-endif
-
-# ------------------------------------------------------------
-# Commands for running gcc to link a host executable.
-# ------------------------------------------------------------
-define transform-host-o-to-executable
-@mkdir -p $(dir $@)
-@echo "host Executable: $(PRIVATE_MODULE) ($@)"
-$(transform-host-o-to-executable-inner)
-endef
-
-ifneq ($(HOST_CUSTOM_LD_COMMAND),true)
-define transform-host-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) \
-    -Wl,-rpath-link=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
-    -Wl,-rpath=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
-    $(HOST_GLOBAL_LD_DIRS) \
-    $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
-        $(HOST_GLOBAL_LDFLAGS) \
-      ) \
-    $(PRIVATE_LDFLAGS) \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
+    -Wl,-dynamic-linker,$(TARGET_LINKER) \
+    -Wl,--gc-sections \
+    -Wl,-z,nocopyreloc \
+    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
+    -Wl,-rpath-link=$(PRIVATE_TARGET_OUT_INTERMEDIATE_LIBRARIES) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_DYNAMIC_O)) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
-    $(call normalize-host-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
     -Wl,--no-whole-archive \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),Wl$(comma)--start-group) \
-    $(call normalize-host-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),Wl$(comma)--end-group) \
-    $(call normalize-host-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
+    $(if $(TARGET_BUILD_APPS),$(PRIVATE_TARGET_LIBGCC)) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
     -o $@ \
-    $(PRIVATE_LDLIBS)
+    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+    $(PRIVATE_LDFLAGS) \
+    $(PRIVATE_TARGET_FDO_LIB) \
+    $(PRIVATE_TARGET_LIBGCC) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
 endef
-endif
-
-# ------------------------------------------------------------
-# Commands for running host ar
-# ------------------------------------------------------------
-
-define transform-host-o-to-static-lib
-@mkdir -p $(dir $@)
-@rm -f $@
-$(extract-and-include-host-whole-static-libs)
-@echo "host StaticLib: $(PRIVATE_MODULE) ($@)"
-$(call split-long-arguments,$(HOST_AR) $(HOST_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@,$(filter %.o,$^))
-endef
-
-define extract-and-include-host-whole-static-libs
-$(foreach lib,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES), \
-   $(call _extract-and-include-single-host-whole-static-lib,$(lib)) \
- )
-endef
-
-# $(1): the full path of the source static library.
-define _extract-and-include-single-host-whole-static-lib
-@echo "preparing StaticLib: $(PRIVATE_MODULE) [including $(1)]"
-$(hide) ldir=$(PRIVATE_INTERMEDIATES_DIR)/WHOLE/$(basename $(notdir $(1)))_objs; \
-    rm -rf $$ldir; \
-    mkdir -p $$ldir; \
-    filelist=; \
-    for f in `$(HOST_AR) t $(1) | \grep '\.o$$'`; do \
-        $(HOST_AR) p $(1) $$f > $$ldir/$$f; \
-        filelist="$$filelist $$ldir/$$f"; \
-    done; \
-    $(HOST_AR) $(HOST_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@ $$filelist
-endef
-
-#-------------------------------------------------------------
-# Commands for runing gcc to link a shared library
-#-------------------------------------------------------------
-define transform-host-o-to-shared-lib
-@mkdir -p $(dir $@)
-@echo "host SharedLib: $(PRIVATE_MODULE) ($@)"
-$(transform-host-o-to-shared-lib-inner)
-endef
-
-ifneq ($(HOST_CUSTOM_LD_COMMAND),true)
-define transform-host-o-to-shared-lib-inner
-$(hide) $(PRIVATE_CXX) \
-	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
-	-Wl,-rpath-link=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
-	-Wl,-rpath=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
-	-shared -Wl,-soname,$(notdir $@) \
-	$(PRIVATE_LDFLAGS) \
-	$(HOST_GLOBAL_LD_DIRS) \
-	$(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
-		$(HOST_GLOBAL_LDFLAGS) \
-	) \
-	$(PRIVATE_ALL_OBJECTS) \
-	-Wl,--whole-archive \
-	$(call normalize-host-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
-	-Wl,--no-whole-archive \
-	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
-	$(call normalize-host-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
-	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-	$(call normalize-host-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
-	-o $@ \
-	$(PRIVATE_LDLIBS)
-endef
-endif
-
 
 # ------------------------------------------------------------
 # Commands for running gcc to link a statically linked executable.
@@ -496,10 +389,27 @@ define transform-o-to-static-executable
 $(transform-o-to-static-executable-inner)
 endef
 
-ifneq ($(TARGET_CUSTOM_LD_COMMAND),true)
 define transform-o-to-static-executable-inner
+$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
+    -Wl,--gc-sections \
+    -o $@ \
+    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
+    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+    $(PRIVATE_LDFLAGS) \
+    $(PRIVATE_ALL_OBJECTS) \
+    -Wl,--whole-archive \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
+    -Wl,--no-whole-archive \
+    $(call normalize-target-libraries,$(filter-out %libc_nomalloc.a,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES)))) \
+    -Wl,--start-group \
+    $(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
+    $(call normalize-target-libraries,$(filter %libc_nomalloc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
+    $(PRIVATE_TARGET_FDO_LIB) \
+    $(PRIVATE_TARGET_LIBGCC) \
+    -Wl,--end-group \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
 endef
-endif
 
 # -----------------------------------------------------------
 # Commands for running gcc to link a shared library or package
@@ -510,17 +420,34 @@ define transform-o-to-shared-lib
 $(transform-o-to-shared-lib-inner)
 endef
 
-ifneq ($(TARGET_CUSTOM_LD_COMMAND),true)
 define transform-o-to-shared-lib-inner
+$(hide) $(PRIVATE_CXX) \
+    -nostdlib -Wl,-soname,$(notdir $@) \
+    -Wl,--gc-sections \
+    -Wl,-shared,-Bsymbolic \
+    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_SO_O)) \
+    $(PRIVATE_ALL_OBJECTS) \
+    -Wl,--whole-archive \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
+    -Wl,--no-whole-archive \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
+    -o $@ \
+    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+    $(PRIVATE_LDFLAGS) \
+    $(PRIVATE_TARGET_FDO_LIB) \
+    $(PRIVATE_TARGET_LIBGCC) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O))
 endef
-endif
 
-# -----------------------------------------------------------
+#------------------------------------------------------------
 # Commands for running ar
-# -----------------------------------------------------------
-
 # Explicitly delete the archive first so that ar doesn't
 # try to add to an existing archive.
+#------------------------------------------------------------
 define transform-o-to-static-lib
 @mkdir -p $(dir $@)
 @rm -f $@
@@ -558,6 +485,135 @@ define transform-to-stripped
 @mkdir -p $(dir $@)
 @echo "target Strip: $(PRIVATE_MODULE) ($@)"
 $(hide) $(TARGET_STRIP_COMMAND)
+endef
+
+#-------------------------------------------------------------------------------
+# Host
+#-------------------------------------------------------------------------------
+
+# -----------------------------------------------------------
+# Commands for running gcc to compile a host C file.
+# -----------------------------------------------------------
+define transform-host-c-to-o
+$(transform-host-c-to-o-no-deps)
+$(transform-d-to-p)
+endef
+
+define transform-host-c-to-o-no-deps
+@echo "host C: $(PRIVATE_MODULE) <= $<"
+$(call transform-host-c-or-s-to-o-no-deps,  $(PRIVATE_CFLAGS) $(PRIVATE_CONLYFLAGS) $(PRIVATE_DEBUG_CFLAGS))
+endef
+
+# $(1): extra flags
+define transform-host-c-or-s-to-o-no-deps
+@mkdir -p $(dir $@)
+$(hide) $(PRIVATE_CC) \
+    $(addprefix -I , $(PRIVATE_C_INCLUDES)) \
+    $(addprefix -isystem ,\
+       $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+          $(filter-out $(PRIVATE_C_INCLUDES), \
+             $(HOST_PROJECT_INCLUDES) \
+             $(HOST_C_INCLUDES)))) \
+    -c \
+    $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+         $(HOST_GLOBAL_CFLAGS) \
+     ) \
+     $(1) \
+     -MD -MF $(patsubst %.o,%.d,$@) -o $@ $<
+endef
+
+# ------------------------------------------------------------
+# Commands for running gcc to link a host executable.
+# ------------------------------------------------------------
+define transform-host-o-to-executable
+@mkdir -p $(dir $@)
+@echo "host Executable: $(PRIVATE_MODULE) ($@)"
+$(transform-host-o-to-executable-inner)
+endef
+
+define transform-host-o-to-executable-inner
+$(hide) $(PRIVATE_CXX) \
+    -Wl,-rpath-link=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
+    -Wl,-rpath=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
+    $(HOST_GLOBAL_LD_DIRS) \
+    $(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+        $(HOST_GLOBAL_LDFLAGS) \
+      ) \
+    $(PRIVATE_LDFLAGS) \
+    $(PRIVATE_ALL_OBJECTS) \
+    -Wl,--whole-archive \
+    $(call normalize-host-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
+    -Wl,--no-whole-archive \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),Wl$(comma)--start-group) \
+    $(call normalize-host-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),Wl$(comma)--end-group) \
+    $(call normalize-host-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
+    -o $@ \
+    $(PRIVATE_LDLIBS)
+endef
+
+#-------------------------------------------------------------
+# Commands for runing gcc to link a host shared library
+#-------------------------------------------------------------
+define transform-host-o-to-shared-lib
+@mkdir -p $(dir $@)
+@echo "host SharedLib: $(PRIVATE_MODULE) ($@)"
+$(transform-host-o-to-shared-lib-inner)
+endef
+
+define transform-host-o-to-shared-lib-inner
+$(hide) $(PRIVATE_CXX) \
+	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+	-Wl,-rpath-link=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
+	-Wl,-rpath=$(HOST_OUT_INTERMEDIATE_LIBRARIES) \
+	-shared -Wl,-soname,$(notdir $@) \
+	$(PRIVATE_LDFLAGS) \
+	$(HOST_GLOBAL_LD_DIRS) \
+	$(if $(PRIVATE_NO_DEFAULT_COMPILER_FLAGS),, \
+		$(HOST_GLOBAL_LDFLAGS) \
+	) \
+	$(PRIVATE_ALL_OBJECTS) \
+	-Wl,--whole-archive \
+	$(call normalize-host-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
+	-Wl,--no-whole-archive \
+	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
+	$(call normalize-host-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+	$(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
+	$(call normalize-host-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
+	-o $@ \
+	$(PRIVATE_LDLIBS)
+endef
+
+# ------------------------------------------------------------
+# Commands for running host ar
+# ------------------------------------------------------------
+
+define transform-host-o-to-static-lib
+@mkdir -p $(dir $@)
+@rm -f $@
+$(extract-and-include-host-whole-static-libs)
+@echo "host StaticLib: $(PRIVATE_MODULE) ($@)"
+$(call split-long-arguments,$(HOST_AR) $(HOST_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@,$(filter %.o,$^))
+endef
+
+define extract-and-include-host-whole-static-libs
+$(foreach lib,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES), \
+   $(call _extract-and-include-single-host-whole-static-lib,$(lib)) \
+ )
+endef
+
+# $(1): the full path of the source static library.
+define _extract-and-include-single-host-whole-static-lib
+@echo "preparing StaticLib: $(PRIVATE_MODULE) [including $(1)]"
+$(hide) ldir=$(PRIVATE_INTERMEDIATES_DIR)/WHOLE/$(basename $(notdir $(1)))_objs; \
+    rm -rf $$ldir; \
+    mkdir -p $$ldir; \
+    filelist=; \
+    for f in `$(HOST_AR) t $(1) | \grep '\.o$$'`; do \
+        $(HOST_AR) p $(1) $$f > $$ldir/$$f; \
+        filelist="$$filelist $$ldir/$$f"; \
+    done; \
+    $(HOST_AR) $(HOST_GLOBAL_ARFLAGS) $(PRIVATE_ARFLAGS) $@ $$filelist
 endef
 
 # -----------------------------------------------------------

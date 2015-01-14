@@ -35,8 +35,10 @@ $(error Unable to determine HOST_OS from uname -sm: $(UNAME)!)
 endif
 
 # HOST_ARCH
-ifneq (,$(findstring 86,$(UNAME)))
 HOST_ARCH := x86
+ifneq (,$(findstring x86_64,$(UNAME)))
+  HOST_ARCH := x86_64
+  HOST_IS_64_BIT := true
 endif
 
 BUILD_ARCH := $(HOST_ARCH)
@@ -56,12 +58,15 @@ $(error HOST_BUILD_TYPE must be either release or debug, not '$(HOST_BUILD_TYPE)
 endif
 endif
 
+# We don't want to move all the prebuilt host tools to a $(HOST_OS)-x86_64 dir.
+HOST_PREBUILT_ARCH := x86
+
 #
 # This is the standard way to name a directory containng platforms host
 # objects. E.g., devtools/gcc/$(HOST_COMPILER_TAG)/target
 #
 ifeq ($(HOST_OS),linux)
-HOST_MACHINE_TAG := $(HOST_OS)-$(HOST_ARCH)
+HOST_MACHINE_TAG := $(HOST_OS)-$(HOST_PREBUILT_ARCH)
 endif
 
 # ------------------------------------------------------------
@@ -121,8 +126,8 @@ HOST_OUT_ROOT_debug := $(DEBUG_OUT_DIR)/host
 
 HOST_OUT_ROOT := $(HOST_OUT_ROOT_$(HOST_BUILD_TYPE))
 
-HOST_OUT_release := $(HOST_OUT_ROOT_release)/$(HOST_OS)-$(HOST_ARCH)
-HOST_OUT_debug := $(HOST_OUT_ROOT_debug)/$(HOST_OS)-$(HOST_ARCH)
+HOST_OUT_release := $(HOST_OUT_ROOT_release)/$(HOST_OS)-$(HOST_PREBUILT_ARCH)
+HOST_OUT_debug := $(HOST_OUT_ROOT_debug)/$(HOST_OS)-$(HOST_PREBUILT_ARCH)
 
 HOST_OUT := $(HOST_OUT_$(HOST_BUILD_TYPE))
 

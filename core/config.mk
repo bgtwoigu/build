@@ -121,6 +121,9 @@ include $(BUILD_SYSTEM)/combo/select.mk
 combo_target := TARGET_
 include $(BUILD_SYSTEM)/combo/select.mk
 
+#-------------------------------------------------------------------------------
+# Config static analyzer and syntax check.
+
 # -----------------------------------------------------------
 # General tools.
 
@@ -158,6 +161,9 @@ TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS)
 
 TARGET_GLOBAL_LD_DIRS += -L$(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 
-# -----------------------------------------------------------
-#
+#------------------------------------------------------------
+# define clang/llvm tools and global flags
+include $(BUILD_SYSTEM)/clang/config.mk
+
+#------------------------------------------------------------
 include $(BUILD_SYSTEM)/dumpvar.mk
