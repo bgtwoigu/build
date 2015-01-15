@@ -72,30 +72,7 @@ TARGET_SHELL := bash
 #
 include $(BUILD_SYSTEM)/envsetup.mk
 
-# ------------------------------------------------------------
-# Borads may be defined under $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)
-#
-board_config_mk := \
-  $(strip \
-     $(wildcard \
-         $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)/BoardConfig.mk \
-       ) \
-   )
-ifeq ($(board_config_mk),)
-  $(error No config file found for TARGET_DEVICE $(TARGET_DEVICE))
-endif
-ifneq ($(words $(board_config_mk)),1)
-  $(error Multiple board config files for TARGET_DEVICE $(TARGET_DEVICE): $(board_config_mk))
-endif
-
-include $(board_config_mk)
-
-ifeq ($(TARGET_ARCH),)
-  $(error TARGET_ARCH not defined by board config: $(board_config_mk))
-endif
-TARGET_DEVICE_DIR := $(patsubst %/,%,$(dir $(board_config_mk)))
-board_config_mk :=
-
+#---------------------------------------------------------------------
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
   INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
 else

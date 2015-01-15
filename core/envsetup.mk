@@ -87,7 +87,31 @@ $(warning bad TARGET_BUILD_VARIANT: $(TARGET_BUILD_VARIANT))
 $(error must be empty or one of: eng user userdebug)
 endif
 
-# ------------------------------------------------------------
+#-------------------------------------------------------------
+# Boards may be defined under $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)
+# or under vendor/*/$(TARGET_DEVICE).  Search in both places, but
+# make sure only one exists.
+# Real boards should always be associated with an OEM vendor.
+board_config_mk := \
+  $(strip $(wildcard \
+    $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)/BoardConfig.mk \
+    $(shell test -d device && find device -maxdepth 4 -path '*/$(TARGET_DEVICE)/BoardConfig.mk') \
+    $(shell test -d vendor && find vendor -maxdepth 4 -path '*/$(TARGET_DEVICE)/BoardConfig.mk') \
+  ))
+ifeq ($(board_config_mk),)
+  $(error No config file found for TARGET_DEVICE $(TARGET_DEVICE))
+endif
+ifneq ($(words $(board_config_mk)),1)
+  $(error Multiple board config files for TARGET_DEVICE $(TARGET_DEVICE): $(board_config_mk))
+endif
+include $(board_config_mk)
+ifeq ($(TARGET_ARCH),)
+  $(error TARGET_ARCH not defined by board config: $(board_config_mk))
+endif
+TARGET_DEVICE_DIR := $(patsubst %/,%,$(dir $(board_config_mk)))
+board_config_mk :=
+
+#-------------------------------------------------------------
 # Set up configuration for target machine.
 # The following must be set:
 #      TARGET_OS = {linux}
@@ -102,7 +126,7 @@ ifneq ($(TARGET_BUILD_TYPE),debug)
 TARGET_BUILD_TYPE := release
 endif
 
-# ------------------------------------------------------------
+#-------------------------------------------------------------
 # figure out the output directories
 #
 

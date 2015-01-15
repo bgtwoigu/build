@@ -44,8 +44,6 @@ function add_lunch_combo()
 # add the defult one here
 add_lunch_combo yudatun_qemu-eng
 add_lunch_combo yudatun_qemu-userdebug
-add_lunch_combo yudatun_qt210-eng
-add_lunch_combo yudatun_qt210-userdebug
 
 VARIANT_CHOICES=(user userdebug eng)
 

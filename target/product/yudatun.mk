@@ -6,8 +6,6 @@
 # published by the Free Software Foundation
 #
 
-include $(SRC_TARGET_DIR)/product/emulator.mk
-
 PRODUCT_NAME := yudatun
 PRODUCT_BRAND := Yudatun
 PRODUCT_MODEL := Yudatun on QEMU
