@@ -44,21 +44,7 @@ unique_product_copy_files_destinations :=
 # Targets for boot/OS images
 # -----------------------------------------------------------
 
-# -----------------------------------------------------------
-# bootloader
-ifneq ($(strip $(TARGET_NO_BOOTLOADER)), true)
-  INSTALLED_BOOTLOADER_TARGET := $(PRODUCT_OUT)/bootloader
-else
-  INSTALLED_BOOTLOADER_TARGET :=
-endif
-
-INTERNAL_BOOTLOADER_FILE := $(TARGET_BOARDER_BOOTLOADER)
-
-$(INSTALLED_BOOTLOADER_TARGET): $(INTERNAL_BOOTLOADER_FILE)
-	$(call pretty, "Target bootloader: $< --> $@")
-	$(copy-file-to-target-with-cp)
-
-# -----------------------------------------------------------
+#---------------------------------------------------------------------
 # the initramfs
 INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_ROOT_OUT)/%, \
     $(ALL_DEFAULT_INSTALLED_MODULES)) \
@@ -71,7 +57,7 @@ $(INSTALLED_INITRAMFS_TARGET): $(MKBOOTFS) $(INTERNAL_INITRAMFS_FILES)
 	$(call pretty, "Target initramfs image: $@ <-- $<")
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | gzip -c > $@
 
-# -----------------------------------------------------------
+#---------------------------------------------------------------------
 # second stage
 ifneq ($(strip $(TARGET_NO_BOOTLOADER)),true)
   INSTALLED_BOOTLOADER_MODULE := $(PRODUCT_OUT)/bootloader
@@ -85,8 +71,9 @@ else
   INSTALLED_2NDBOOTLOADER_TARGET :=
 endif # TARGET_NO_BOOTLOADER
 
-# -----------------------------------------------------------
+#---------------------------------------------------------------------
 # the boot image, which is a collection of other images.
+# boot.img used by aboot
 INTERNAL_BOOTIMAGE_ARGS := \
     $(addprefix --second, $(INSTALLED_2NDBOOTLOADER_TARGET)) \
     --kernel $(INSTALLED_KERNEL_TARGET) \

@@ -66,44 +66,38 @@ TARGET_COMPRESS_MODULE_SYMBOLS := false
 # Default shell is bash.
 TARGET_SHELL := bash
 
-# ------------------------------------------------------------
+#----------------------------------------------------------------------
 # Define most of the global variables. These are the ones that
 # are specifice to the user's build configuration.
 #
 include $(BUILD_SYSTEM)/envsetup.mk
 
 #---------------------------------------------------------------------
-ifneq ($(strip $(TARGET_NO_KERNEL)),true)
-  INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
-else
-  INSTALLED_KERNEL_TARGET :=
-endif
-
 TARGET_CPU_ABI := $(strip $(TARGET_CPU_ABI))
 ifeq ($(TARGET_CPU_ABI),)
   $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
 endif
 TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
 
+#---------------------------------------------------------------------
+# Define the device kernel and bootloader.
+include $(BUILD_SYSTEM)/config_device.mk
+
 # $(1): os/arch
 define select-yudatun-config-h
 build/core/combo/include/arch/$(1)/YudatunConfig.h
 endef
 
-# -----------------------------------------------------------
-#
+#---------------------------------------------------------------------
+# Select the platform compiler.
 combo_target := HOST_
 include $(BUILD_SYSTEM)/combo/select.mk
 
 combo_target := TARGET_
 include $(BUILD_SYSTEM)/combo/select.mk
 
-#-------------------------------------------------------------------------------
-# Config static analyzer and syntax check.
-
-# -----------------------------------------------------------
+#---------------------------------------------------------------------
 # General tools.
-
 MKBOOTFS := $(HOST_OUT_EXECUTABLES)/mkbootfs$(HOST_EXECUTABLE_SUFFIX)
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 MKEXT4FS := $(HOST_OUT_EXECUTABLES)/mkext4fs$(HOST_EXECUTABLE_SUFFIX)
@@ -112,7 +106,7 @@ LUA := $(HOST_OUT_EXECUTABLES)/lua$(HOST_EXECUTABLE_SUFFIX)
 SIMG2IMG := $(HOST_OUT_EXECUTABLES)/simg2img$(HOST_EXECUTABLE_SUFFIX)
 E2FSCK := $(HOST_OUT_EXECUTABLES)/e2fsck$(HOST_EXECUTABLE_SUFFIX)
 
-# -----------------------------------------------------------
+#---------------------------------------------------------------------
 # Set up final options for host module
 HOST_PROJECT_INCLUDES := $(SRC_HEADERS) $(HOST_OUT_INTERMEDIATE_HEADERS)
 
