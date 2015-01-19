@@ -105,6 +105,7 @@ MKEXTUSERIMG := $(HOST_OUT_EXECUTABLES)/mkuserimg.sh
 LUA := $(HOST_OUT_EXECUTABLES)/lua$(HOST_EXECUTABLE_SUFFIX)
 SIMG2IMG := $(HOST_OUT_EXECUTABLES)/simg2img$(HOST_EXECUTABLE_SUFFIX)
 E2FSCK := $(HOST_OUT_EXECUTABLES)/e2fsck$(HOST_EXECUTABLE_SUFFIX)
+UBOOT-MKIMAGE := $(HOST_OUT_EXECUTABLES)/uboot-mkimage$(HOST_EXECUTABLE_SUFFIX)
 
 #---------------------------------------------------------------------
 # Set up final options for host module
