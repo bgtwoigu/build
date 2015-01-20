@@ -50,12 +50,24 @@ INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_ROOT_OUT)/%, \
     $(ALL_DEFAULT_INSTALLED_MODULES)) \
     $(ALL_PREBUILT)
 
-BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
-# We just build this directly to the install location.
-INSTALLED_INITRAMFS_TARGET := $(BUILT_INITRAMFS_TARGET)
-$(INSTALLED_INITRAMFS_TARGET): $(MKBOOTFS) $(INTERNAL_INITRAMFS_FILES)
-	$(call pretty, "Target initramfs image: $@ <-- $<")
+BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.tmp.img
+$(BUILT_INITRAMFS_TARGET): $(MKBOOTFS) $(INTERNAL_INITRAMFS_FILES)
+	$(call pretty, "Target initramfs image: $@")
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | gzip -c > $@
+
+# We just build this directly to the install location.
+INSTALLED_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
+ifeq ($(strip $(TARGET_BOOTLOADER_IS_UBOOT)),true)
+$(INSTALLED_INITRAMFS_TARGET): $(UBOOT-MKIMAGE)
+endif # TARGET_BOOTLOADER_IS_UBOOT
+$(INSTALLED_INITRAMFS_TARGET): $(BUILT_INITRAMFS_TARGET)
+	$(call pretty, "Target initramfs image: $@ <-- $<")
+ifeq ($(strip $(TARGET_BOOTLOADER_IS_UBOOT)),true)
+	$(hide) $(UBOOT-MKIMAGE) $(UBOOT_MKIMAGE_INITRAMFS_ARGS) -d $(BUILT_INITRAMFS_TARGET) $@
+else
+	$(transform-prebuilt-to-target)
+endif # TARGET_BOOTLOADER_IS_UBOOT
+	$(hide) rm -rf $(BUILT_INITRAMFS_TARGET)
 
 #---------------------------------------------------------------------
 # second stage
