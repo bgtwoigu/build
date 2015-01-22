@@ -526,6 +526,19 @@ function emulator-a9-serial()
         -serial stdio -append "console=ttyAMA0"
 }
 
+function create_flash_image()
+{
+    dd if=/dev/zero of=flash.bin bs=1 count=6M
+    dd if=bootloader of=flash.bin conv=notrunc bs=1
+    dd if=kernel of=flash.bin conv=notrunc bs=1 seek=2M
+    dd if=initramfs.img of=flash.bin conv=notrunc bs=1 seek=4M
+}
+
+function gdbserver-a9()
+{
+    qemu-system-arm -d in_asm -M vexpress-a9 -m 1024 -cpu cortex-a9 -kernel $1 -serial stdio -s -S
+}
+
 if [ "x$SHELL" != "x/bin/bash" ] ; then
     case 'ps -o command -p $$' in
         *bash*)
