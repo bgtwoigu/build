@@ -427,9 +427,17 @@ all_modules: $(ALL_MODULES)
 # Building a full system-- the default is to build yudatuncore
 .PHONY: yudatuncore
 yudatuncore: \
-    $(INSTALLED_BOOTLOADER_TARGET) \
-    $(INSTALLED_KERNEL_TARGET) \
     $(INSTALLED_INITRAMFS_TARGET) \
+
+# bootloader
+ifeq (false, $(strip $(TARGET_NO_BOOTLOADER)))
+yudatuncore: $(INSTALLED_BOOTLOADER_TARGET)
+endif
+
+# kernel
+ifeq (false, $(strip $(TARGET_NO_KERNEL)))
+yudatuncore: $(INSTALLED_KERNEL_TARGET)
+endif
 
 yudatun: yudatuncore
 

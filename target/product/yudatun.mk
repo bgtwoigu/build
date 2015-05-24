@@ -7,6 +7,6 @@
 #
 
 PRODUCT_NAME := yudatun
-PRODUCT_BRAND := Yudatun
-PRODUCT_MODEL := Yudatun on QEMU
-PRODUCT_DEVICE := qemu
+PRODUCT_BRAND := yudatun
+PRODUCT_MODEL := yudatun
+PRODUCT_DEVICE := yudatun
