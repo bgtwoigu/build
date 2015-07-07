@@ -163,26 +163,8 @@ function check_variant()
 
 function set_stuff_for_environment()
 {
-    set_title
     set_paths
-    set_sequence_number
-
     export YUDATUN_BUILD_TOP=$(gettop)
-}
-
-function set_title()
-{
-    if [ "$STAY_OFF_MY_LAWN" = "" ] ; then
-        local arch=$(get_target_arch)
-        local product=$TARGET_PRODUCT
-        local variant=$TARGET_BUILD_VARIANT
-        local apps=$TARGET_BUILD_APPS
-        if [ -z "$apps" ] ; then
-            export PROMPT_COMMAND="echo -ne \"\033]0;[${arch}-${product}-${variant}] ${USER}@${HOSTNAME}: ${PWD}\007\""
-        else
-            export PROMPT_COMMAND="echo -ne \"\033]0;[${arch} ${apps} ${variant}] ${USER}@${HOSTNAME}: ${PWD}\007\""
-        fi
-    fi
 }
 
 function get_target_arch()
@@ -241,11 +223,6 @@ function set_paths()
 
     unset YUDATUN_HOST_OUT
     export YUDATUN_HOST_OUT=$(get_abs_build_var HOST_OUT)
-}
-
-function set_sequence_number()
-{
-    export BUILD_ENV_SEQUENCE_NUMBER=10
 }
 
 function print_config()
