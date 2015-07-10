@@ -13,5 +13,6 @@ LOCAL_SRC_FILES := \
     mkbootimg.c
 
 LOCAL_MODULE := mkbootimg
+LOCAL_MODULE_TAG := optional
 
 include $(BUILD_HOST_EXECUTABLE)

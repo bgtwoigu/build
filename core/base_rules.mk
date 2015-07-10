@@ -128,7 +128,6 @@ ifdef OVERRIDE_BUILT_MODULE_PATH
 else
   built_module_path := $(intermediates)
 endif
-
 LOCAL_BUILT_MODULE := $(built_module_path)/$(LOCAL_BUILT_MODULE_STEM)
 built_module_path :=
 

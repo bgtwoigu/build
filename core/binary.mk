@@ -63,7 +63,7 @@ endif
 ifdef LOCAL_IS_HOST_MODULE
   ifneq ($(HOST_OS),windows)
     ifeq ($(my_clang),)
-      my_clang := true
+      my_clang :=
     endif # my_clang
   endif # HOST_OS
 endif

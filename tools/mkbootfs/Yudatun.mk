@@ -9,7 +9,7 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_CLANG := true
+LOCAL_MODULE_TAG := optional
 LOCAL_SRC_FILES := \
     mkbootfs.c
 

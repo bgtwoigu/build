@@ -28,13 +28,13 @@ TARGET_ARCH_VARIANT := armv5te
 endif
 
 ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
-TARGET_GCC_VERSION := 4.8
+TARGET_GCC_VERSION := 5.1.0
 else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
 ifeq ($(strip $(TARGET_LINUX_EABI_PREFIX_EXP)),)
-TARGET_LINUX_EABI_PREFIX := arm-linux-androideabi
+TARGET_LINUX_EABI_PREFIX := arm-linux-gnueabi
 else
 TARGET_LINUX_EABI_PREFIX := $(TARGET_LINUX_EABI_PREFIX_EXP)
 endif # TARGET_LINUX_EABI_PREFIX_EXP
@@ -119,7 +119,7 @@ TARGET_GLOBAL_CFLAGS += \
 # "-Wall -Werror" due to a commom idiom "ALOGV(mesg)" where ALOGV is turned
 # into no-op in some builds while mesg is defined earlier. So we explicitly
 # disable "-Wunused-but-set-variable" here.
-ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8, $(TARGET_GCC_VERSION)),)
+ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8, 5.1.% $(TARGET_GCC_VERSION)),)
 TARGET_GLOBAL_CFLAGS += \
     -Wno-unused-but-set-variable \
     -fno-builtin-sin \
@@ -178,7 +178,7 @@ TARGET_FDO_LIB:=
 ifneq ($(strip $(BUILD_FDO_INSTRUMENT)),)
   # Set BUILD_FDO_INSTRUMENT=true to turn on FDO instrumentation.
   # The profile will be generated on /data/local/tmp/profile on the device.
-  TARGET_FDO_CFLAGS := -fprofile-generate=/data/local/tmp/profile -DANDROID_FDO
+  TARGET_FDO_CFLAGS := -fprofile-generate=/data/local/tmp/profile
   TARGET_FDO_LIB := $(target_libgcov)
 else
   # If BUILD_FDO_INSTRUMENT is turned off, then consider doing the FDO optimizations.
@@ -193,49 +193,18 @@ else
 
   # If the FDO profile directory can't be found, then FDO is off.
   ifneq ($(strip $(wildcard $(TARGET_FDO_PROFILE_PATH))),)
-    TARGET_FDO_CFLAGS := -fprofile-use=$(TARGET_FDO_PROFILE_PATH) -DANDROID_FDO
+    TARGET_FDO_CFLAGS := -fprofile-use=$(TARGET_FDO_PROFILE_PATH)
     TARGET_FDO_LIB := $(target_libgcov)
   endif
 endif
 
-# ------------------------------------------------------------
-libc_root := thirdparty/bionic/libc
-libm_root := thirdparty/bionic/libm
-libstdc++_root := thirdparty/bionic/libstdc++
-
-kernel_headers_common := $(libc_root)/kernel/uapi
-kernel_headers_arch := $(libc_root)/kernel/uapi/asm-$(TARGET_ARCH)
-kernel_headers := $(kernel_headers_common) $(kernel_headers_arch)
-
-TARGET_C_INCLUDES := \
-    $(libc_root)/arch-arm/include \
-    $(libc_root)/include \
-    $(libstdc++_root)/include \
-    $(kernel_headers) \
-    $(libm_root)/include \
-    $(libm_root)/include/arm
-
-TARGET_CRTBEGIN_STATIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_static.o
-TARGET_CRTBEGIN_DYNAMIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_dynamic.o
-TARGET_CRTEND_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_android.o
-
-TARGET_CRTBEGIN_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_so.o
-TARGET_CRTEND_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_so.o
-
-TARGET_STRIP_MODULE := true
-
-TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc libm
-
-TARGET_LINKER := /system/bin/linker
-
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
-    -Wl,-dynamic-linker,$(TARGET_LINKER) \
+$(hide) $(PRIVATE_CXX) -fPIE -pie \
+    -Bdynamic \
     -Wl,--gc-sections \
     -Wl,-z,nocopyreloc \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    -Wl,-rpath-link=$(PRIVATE_TARGET_OUT_INTERMEDIATE_LIBRARIES) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_DYNAMIC_O)) \
+    -Wl,-rpath-link=$(TARGET_OUT_INTERMEDIATE_LIBRARIES) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
     $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
@@ -243,45 +212,37 @@ $(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
     $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
     $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
     $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-    $(if $(TARGET_BUILD_APPS),$(PRIVATE_TARGET_LIBGCC)) \
     $(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
     $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_TARGET_FDO_LIB) \
-    $(PRIVATE_TARGET_LIBGCC) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
+    $(PRIVATE_TARGET_LIBGCC)
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
+$(hide) $(PRIVATE_CXX) \
+    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+    -static \
     -Wl,--gc-sections \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
-    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
     $(PRIVATE_LDFLAGS) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
     $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
     -Wl,--no-whole-archive \
-    $(call normalize-target-libraries,$(filter-out %libc_nomalloc.a,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES)))) \
     -Wl,--start-group \
-    $(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
-    $(call normalize-target-libraries,$(filter %libc_nomalloc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
-    $(PRIVATE_TARGET_FDO_LIB) \
+    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
     $(PRIVATE_TARGET_LIBGCC) \
-    -Wl,--end-group \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
+    -Wl,--end-group
 endef
 
 define transform-o-to-shared-lib-inner
 $(hide) $(PRIVATE_CXX) \
-    -nostdlib -Wl,-soname,$(notdir $@) \
     -Wl,--gc-sections \
+    -shared \
     -Wl,-shared,-Bsymbolic \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_SO_O)) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
     $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
@@ -293,7 +254,5 @@ $(hide) $(PRIVATE_CXX) \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
     $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_TARGET_FDO_LIB) \
-    $(PRIVATE_TARGET_LIBGCC) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O))
+    $(PRIVATE_TARGET_LIBGCC)
 endef

@@ -14,7 +14,11 @@
 #
 
 # Build a target string like "linux-arm" or "linux-x86'.
+ifeq ($($(combo_target)LIBC),)
 combo_os_arch := $($(combo_target)OS)-$($(combo_target)ARCH)
+else
+combo_os_arch := $($(combo_target)OS)-$($(combo_target)ARCH)-$($(combo_target)LIBC)
+endif
 
 # -----------------------------------------------------------
 # Set reasonable defaults for the various variables

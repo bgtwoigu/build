@@ -353,31 +353,6 @@ define transform-o-to-executable
 $(transform-o-to-executable-inner)
 endef
 
-define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
-    -Wl,-dynamic-linker,$(TARGET_LINKER) \
-    -Wl,--gc-sections \
-    -Wl,-z,nocopyreloc \
-    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    -Wl,-rpath-link=$(PRIVATE_TARGET_OUT_INTERMEDIATE_LIBRARIES) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_DYNAMIC_O)) \
-    $(PRIVATE_ALL_OBJECTS) \
-    -Wl,--whole-archive \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
-    -Wl,--no-whole-archive \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-    $(if $(TARGET_BUILD_APPS),$(PRIVATE_TARGET_LIBGCC)) \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
-    -o $@ \
-    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
-    $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_TARGET_FDO_LIB) \
-    $(PRIVATE_TARGET_LIBGCC) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
-endef
-
 # ------------------------------------------------------------
 # Commands for running gcc to link a statically linked executable.
 # In practice, We only use this on arm, so the other platforms
@@ -389,28 +364,6 @@ define transform-o-to-static-executable
 $(transform-o-to-static-executable-inner)
 endef
 
-define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
-    -Wl,--gc-sections \
-    -o $@ \
-    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
-    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
-    $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_ALL_OBJECTS) \
-    -Wl,--whole-archive \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
-    -Wl,--no-whole-archive \
-    $(call normalize-target-libraries,$(filter-out %libc_nomalloc.a,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES)))) \
-    -Wl,--start-group \
-    $(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
-    $(call normalize-target-libraries,$(filter %libc_nomalloc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
-    $(PRIVATE_TARGET_FDO_LIB) \
-    $(PRIVATE_TARGET_LIBGCC) \
-    -Wl,--end-group \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
-endef
-
 # -----------------------------------------------------------
 # Commands for running gcc to link a shared library or package
 # -----------------------------------------------------------
@@ -418,29 +371,6 @@ define transform-o-to-shared-lib
 @mkdir -p $(dir $@)
 @echo "target SharedLib: $(PRIVATE_MODULE) ($@)"
 $(transform-o-to-shared-lib-inner)
-endef
-
-define transform-o-to-shared-lib-inner
-$(hide) $(PRIVATE_CXX) \
-    -nostdlib -Wl,-soname,$(notdir $@) \
-    -Wl,--gc-sections \
-    -Wl,-shared,-Bsymbolic \
-    $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_SO_O)) \
-    $(PRIVATE_ALL_OBJECTS) \
-    -Wl,--whole-archive \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
-    -Wl,--no-whole-archive \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--start-group) \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
-    $(if $(PRIVATE_GROUP_STATIC_LIBRARIES),-Wl$(comma)--end-group) \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
-    -o $@ \
-    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
-    $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_TARGET_FDO_LIB) \
-    $(PRIVATE_TARGET_LIBGCC) \
-    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O))
 endef
 
 #------------------------------------------------------------

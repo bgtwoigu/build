@@ -10,14 +10,11 @@
 # This is a build configuration for a very minimal build of the
 # Open-Source part of the tree.
 
-BIONIC_CORE := \
+LIBC_CORE := \
     libc \
-    libm \
-    libdl \
-    linker \
 
 PRODUCT_PACKAGES := \
-    $(BIONIC_CORE) \
+    $(LIBC_CORE) \
     libcutils \
     init \
 

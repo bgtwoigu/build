@@ -9,7 +9,7 @@ LOCAL_PATH := $(my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := mkbl1.c
-
+LOCAL_MODULE_TAG := optional
 LOCAL_MODULE := mkbl1
 
 include $(BUILD_HOST_EXECUTABLE)

@@ -21,7 +21,7 @@ endif
 ifeq (SHARED_LIBRARIES, $(LOCAL_MODULE_CLASS))
   # Put the build targets of all shared libraries in a common directory
   # to simplify the link line
-  OVERRIDE_BUILD_MODULE_PATH := $($(my_prefix)OUT_INTERMEDIATE_LIBRARIES)
+  OVERRIDE_BUILT_MODULE_PATH := $($(my_prefix)OUT_INTERMEDIATE_LIBRARIES)
 endif
 
 ifneq ($(filter STATIC_LIBRARIES SHARED_LIBRARIES,$(LOCAL_MODULE_CLASS)),)
