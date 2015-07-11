@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include <dac/fs_config.h>
+#include <private/fs_config.h>
 
 static void die(const char* why, ...)
 {

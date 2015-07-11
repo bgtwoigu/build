@@ -27,7 +27,8 @@ comma := ,
 # when a module links against a particular library.
 # TODO: See if we can remove most of these from the global list.
 SRC_HEADERS := \
-    $(TOPDIR)system/include
+    $(TOPDIR)system/libraries/include \
+    $(TOPDIR)system/private/include \
 
 SRC_TARGET_DIR := $(TOPDIR)build/target
 
