@@ -80,10 +80,6 @@ ifeq ($(TARGET_CPU_ABI),)
 endif
 TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
 
-#---------------------------------------------------------------------
-# Define the device kernel and bootloader.
-include $(BUILD_SYSTEM)/config_device.mk
-
 # $(1): os/arch
 define select-yudatun-config-h
 build/core/combo/include/arch/$(1)/YudatunConfig.h

@@ -50,69 +50,21 @@ INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_OUT_ROOT)/%, \
     $(ALL_DEFAULT_INSTALLED_MODULES)) \
     $(ALL_PREBUILT)
 
-BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.tmp.img
-$(BUILT_INITRAMFS_TARGET): $(MKBOOTFS) $(INTERNAL_INITRAMFS_FILES)
-	$(call pretty, "Target initramfs image: $@")
-	$(hide) $(MKBOOTFS) $(TARGET_OUT_ROOT) | gzip -c > $@
+BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
 
 # We just build this directly to the install location.
-INSTALLED_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
-ifeq ($(strip $(TARGET_BOOTLOADER_IS_UBOOT)),true)
-$(INSTALLED_INITRAMFS_TARGET): $(UBOOT-MKIMAGE)
-endif # TARGET_BOOTLOADER_IS_UBOOT
-$(INSTALLED_INITRAMFS_TARGET): $(BUILT_INITRAMFS_TARGET)
-	$(call pretty, "Target initramfs image: $@ <-- $<")
-ifeq ($(strip $(TARGET_BOOTLOADER_IS_UBOOT)),true)
-	$(hide) $(UBOOT-MKIMAGE) $(UBOOT_MKIMAGE_INITRAMFS_ARGS) -d $(BUILT_INITRAMFS_TARGET) $@
-else
-	$(transform-prebuilt-to-target)
-endif # TARGET_BOOTLOADER_IS_UBOOT
-	$(hide) rm -rf $(BUILT_INITRAMFS_TARGET)
+INSTALLED_INITRAMFS_TARGET := $(BUILT_INITRAMFS_TARGET)
 
-#---------------------------------------------------------------------
-# second stage
-ifneq ($(strip $(TARGET_NO_BOOTLOADER)),true)
-  INSTALLED_BOOTLOADER_MODULE := $(PRODUCT_OUT)/bootloader
-  ifeq ($(strip $(TARGET_BOOTLOADER_IS_2ND)),true)
-    INSTALLED_2NDBOOTLOADER_TARGET := $(PRODUCT_OUT)/2ndbootloader
-  else
-    INSTALLED_2NDBOOTLOADER_TARGET :=
-  endif
-else
-  INSTALLED_BOOTLOADER_MODULE :=
-  INSTALLED_2NDBOOTLOADER_TARGET :=
-endif # TARGET_NO_BOOTLOADER
+ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FS))
+$(INSTALLED_INITRAMFS_TARGET): $(MKBOOTFS)
+endif # TARGET_INITRAMFS_IMAGE_FS
+$(INSTALLED_INITRAMFS_TARGET): $(INTERNAL_INITRAMFS_FILES)
 
-#---------------------------------------------------------------------
-# the boot image, which is a collection of other images.
-# boot.img used by aboot
-INTERNAL_BOOTIMAGE_ARGS := \
-    $(addprefix --second, $(INSTALLED_2NDBOOTLOADER_TARGET)) \
-    --kernel $(INSTALLED_KERNEL_TARGET) \
-    --initramfs $(INSTALLED_INITRAMFS_TARGET)
-
-INTERNAL_BOOTIMAGE_FILES := $(filter-out --%,$(INTERNAL_BOOTIMAGE_ARGS))
-
-BOARD_KERNEL_CMDLINE := $(strip $(BOARD_KERNEL_CMDLINE))
-ifdef BOARD_KERNEL_CMDLINE
-  INTERNAL_BOOTIMAGE_ARGS += --cmdline "$(BOARD_KERNEL_CMDLINE)"
-endif
-
-BOARD_KERNEL_BASE := $(strip $(BOARD_KERNEL_BASE))
-ifdef BOARD_KERNEL_BASE
-  INTERNAL_BOOTIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
-endif
-
-BOARD_KERNEL_PAGESIZE := $(strip $(BOARD_KERNEL_PAGESIZE))
-ifdef BOARD_KERNEL_PAGESIZE
-  INTERNAL_BOOTIMAGE_ARGS += --pagesize $(BOARD_KERNEL_PAGESIZE)
-endif
-
-INSTALLED_BOOTIMAGE_TARGET := $(PRODUCT_OUT)/boot.img
-
-$(INSTALLED_BOOTIMAGE_TARGET): $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_FILES)
-	$(call pretty,"Target boot image: $@")
-	$(hide) $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
+$(INSTALLED_INITRAMFS_TARGET):
+	$(call pretty, "Target initramfs image: $@")
+ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FS))
+	$(hide) $(MKBOOTFS) $(TARGET_OUT_ROOT) | gzip -c > $@
+endif # TARGET_INITRAMFS_IMAGE_FS
 
 # -----------------------------------------------------------
 # Targets for user images

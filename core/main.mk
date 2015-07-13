@@ -400,17 +400,14 @@ $(ALL_C_CPP_ETC_OBJECTS): | all_copied_headers
 files: prebuilt \
        $(modules_to_install)
 
-.PHONY: bootloader
-bootloader: $(INSTALLED_BOOTLOADER_TARGET)
-
 .PHONY: kernel
 kernel: $(INSTALLED_KERNEL_TARGET)
 
-.PHONY: initramfs
-initramfs: $(INSTALLED_INITRAMFS_TARGET)
-
 .PHONY: bootimage
 bootimage: $(INSTALLED_BOOTIMAGE_TARGET)
+
+.PHONY: initramfs
+initramfs: $(INSTALLED_INITRAMFS_TARGET)
 
 # -----------------------------------------------------------
 # Rules that need to be present for the all targets, even
@@ -430,15 +427,15 @@ yudatuncore: \
     files \
     $(INSTALLED_INITRAMFS_TARGET) \
 
-# bootloader
-ifeq (false, $(strip $(TARGET_NO_BOOTLOADER)))
-yudatuncore: $(INSTALLED_BOOTLOADER_TARGET)
-endif
-
 # kernel
 ifeq (false, $(strip $(TARGET_NO_KERNEL)))
 yudatuncore: $(INSTALLED_KERNEL_TARGET)
-endif
+endif # TARGET_NO_KERNEL
+
+# boot.img
+ifeq (false, $(strip $(TARGET_NO_BOOTIMAGE)))
+yudatuncore: $(INSTALLED_BOOTIMAGE_TARGET)
+endif # TARGET_NO_BOOTIMAGE
 
 yudatun: yudatuncore
 
