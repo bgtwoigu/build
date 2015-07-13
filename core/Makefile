@@ -46,14 +46,14 @@ unique_product_copy_files_destinations :=
 
 #---------------------------------------------------------------------
 # the initramfs
-INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_ROOT_OUT)/%, \
+INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_OUT_ROOT)/%, \
     $(ALL_DEFAULT_INSTALLED_MODULES)) \
     $(ALL_PREBUILT)
 
 BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.tmp.img
 $(BUILT_INITRAMFS_TARGET): $(MKBOOTFS) $(INTERNAL_INITRAMFS_FILES)
 	$(call pretty, "Target initramfs image: $@")
-	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | gzip -c > $@
+	$(hide) $(MKBOOTFS) $(TARGET_OUT_ROOT) | gzip -c > $@
 
 # We just build this directly to the install location.
 INSTALLED_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
@@ -174,7 +174,7 @@ endef
 # -----------------------------------------------------------
 # the system image
 
-INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
+INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT_SYSTEM)/%, \
     $(ALL_PREBUILT) \
     $(ALL_DEFAULT_INSTALLED_MODULES) \
     )
@@ -195,7 +195,7 @@ define build-systemimage-target
      $(systemimage_intermediates)/systemimage_info.txt, skip_fsck=true)
   $(hide) PATH=$(foreach p,$(INTERNAL_USERIMAGES_BINARY_PATHS),$(p):)$$PATH \
     $(LUA) ./build/tools/mkimage/mkimage.lua \
-    $(TARGET_OUT) $(systemimage_intermediates)/systemimage_info.txt $(1)
+    $(TARGET_OUT_SYSTEM) $(systemimage_intermediates)/systemimage_info.txt $(1)
 endef
 
 $(BUILT_SYSTEMIMAGE): $(FULL_SYSTEMIMAGE_DEPS)

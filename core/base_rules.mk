@@ -77,7 +77,7 @@ ifeq ($(LOCAL_MODULE_PATH),)
   ifdef LOCAL_IS_HOST_MODULE
     partition_tag :=
   else # !LOCAL_IS_HOST_MODULE
-    partition_tag := $(if $(call should-install-to-system,$(LOCAL_MODULE_TAGS)),,_DATA)
+    partition_tag := $(if $(call should-install-to-system,$(LOCAL_MODULE_TAGS)),_SYSTEM,_DATA)
   endif # LOCAL_IS_HOST_MODULE
   install_path_var := $(my_prefix)OUT$(partition_tag)_$(LOCAL_MODULE_CLASS)
   LOCAL_MODULE_PATH := $($(install_path_var))

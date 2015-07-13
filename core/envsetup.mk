@@ -72,9 +72,11 @@ endif
 # ------------------------------------------------------------
 # TARGET_COPY_OUT_* are all relative to the staging directory, ie PRODUCT_OUT.
 # Define them here so they can be used in product config files.
+TARGET_COPY_OUT_BOOT := boot
+TARGET_COPY_OUT_ROOT := root
 TARGET_COPY_OUT_SYSTEM := system
 TARGET_COPY_OUT_DATA := data
-TARGET_COPY_OUT_ROOT := root
+
 
 # ------------------------------------------------------------
 # Read the product specs so we an get TARGET_DEVICE and other
@@ -179,27 +181,34 @@ TARGET_OUT_COMMON_INTERMEDIATES := $(TARGET_COMMON_OUT_ROOT)/obj
 TARGET_OUT_INTERMEDIATE_HEADERS := $(TARGET_OUT_INTERMEDIATES)/include
 TARGET_OUT_INTERMEDIATE_LIBRARIES := $(TARGET_OUT_INTERMEDIATES)/lib
 
-# -----------------------------------------------------------
-#TARGET_OUT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_SYSTEM)
-TARGET_OUT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_ROOT)/$(TARGET_COPY_OUT_SYSTEM)
-TARGET_OUT_EXECUTABLES := $(TARGET_OUT)/bin
-TARGET_OUT_SHARED_LIBRARIES := $(TARGET_OUT)/lib
+#---------------------------------------
+# boot
+TARGET_OUT_BOOT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_BOOT)
 
+#---------------------------------------
+# root
+TARGET_OUT_ROOT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_ROOT)
+
+#---------------------------------------
+# system
+TARGET_OUT_SYSTEM := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_SYSTEM)
+TARGET_OUT_SYSTEM_EXECUTABLES := $(TARGET_OUT_SYSTEM)/bin
+TARGET_OUT_SYSTEM_SHARED_LIBRARIES := $(TARGET_OUT_SYSTEM)/lib
+
+#---------------------------------------
+# data
 TARGET_OUT_DATA := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_DATA)
-TARGET_OUT_DATA_EXECUTABLES := $(TARGET_OUT_EXECUTABLES)
 
+#---------------------------------------
 TARGET_OUT_UNSTRIPPED := $(PRODUCT_OUT)/symbols
-
-# -----------------------------------------------------------
-TARGET_ROOT_OUT := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_ROOT)
 
 TARGET_ROOT_OUT_UNSTRIPPED := $(TARGET_OUT_UNSTRIPPED)
 
-# -----------------------------------------------------------
+#---------------------------------------
 
 COMMON_MODULE_CLASSES := TARGET-NOTICE_FILES HOST-NOTICE_FILES
 
-# -----------------------------------------------------------
+#---------------------------------------
 # open print config flag
 #
 ifeq ($(PRINT_BUILD_CONFIG),)
