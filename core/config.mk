@@ -95,13 +95,14 @@ include $(BUILD_SYSTEM)/combo/select.mk
 
 #---------------------------------------------------------------------
 # General tools.
+# cpio
 MKBOOTFS := $(HOST_OUT_EXECUTABLES)/mkbootfs$(HOST_EXECUTABLE_SUFFIX)
+# bootimage
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
-MKEXT4FS := $(HOST_OUT_EXECUTABLES)/mkext4fs$(HOST_EXECUTABLE_SUFFIX)
-MKEXTUSERIMG := $(HOST_OUT_EXECUTABLES)/mkuserimg.sh
-LUA := $(HOST_OUT_EXECUTABLES)/lua$(HOST_EXECUTABLE_SUFFIX)
-SIMG2IMG := $(HOST_OUT_EXECUTABLES)/simg2img$(HOST_EXECUTABLE_SUFFIX)
-E2FSCK := $(HOST_OUT_EXECUTABLES)/e2fsck$(HOST_EXECUTABLE_SUFFIX)
+# vfat
+MKDOSFS := $(HOST_OUT_EXECUTABLES)/mkdosfs$(HOST_EXECUTABLE_SUFFIX)
+MCOPY := $(HOST_OUT_EXECUTABLES)/mcopy$(HOST_EXECUTABLE_SUFFIX)
+# u-boot
 UBOOT-MKIMAGE := $(HOST_OUT_EXECUTABLES)/uboot-mkimage$(HOST_EXECUTABLE_SUFFIX)
 
 #---------------------------------------------------------------------

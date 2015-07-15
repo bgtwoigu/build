@@ -55,16 +55,16 @@ BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
 # We just build this directly to the install location.
 INSTALLED_INITRAMFS_TARGET := $(BUILT_INITRAMFS_TARGET)
 
-ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FS))
+ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FILESYSTEM))
 $(INSTALLED_INITRAMFS_TARGET): $(MKBOOTFS)
-endif # TARGET_INITRAMFS_IMAGE_FS
+endif # TARGET_INITRAMFS_IMAGE_FILESYSTEM
 $(INSTALLED_INITRAMFS_TARGET): $(INTERNAL_INITRAMFS_FILES)
 
 $(INSTALLED_INITRAMFS_TARGET):
 	$(call pretty, "Target initramfs image: $@")
-ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FS))
+ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FILESYSTEM))
 	$(hide) $(MKBOOTFS) $(TARGET_OUT_ROOT) | gzip -c > $@
-endif # TARGET_INITRAMFS_IMAGE_FS
+endif # TARGET_INITRAMFS_IMAGE_FILESYSTEM
 
 # -----------------------------------------------------------
 # Targets for user images
