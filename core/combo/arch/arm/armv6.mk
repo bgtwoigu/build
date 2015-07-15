@@ -13,4 +13,3 @@
 arch_variant_cflags := \
     -march=armv6 \
     -mfpu=vfp \
-    -mfloat-abi=hard
