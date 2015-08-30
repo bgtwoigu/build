@@ -219,7 +219,7 @@ define copy-file-to-target-with-cp
 $(hide) cp -fp $< $@
 endef
 
-# The same as copy-file-to-new-target, but don't preserve
+# The same as copy-file-to-target-with-cp, but don't preserve
 # the old modification time.
 define copy-file-to-new-target-with-cp
 @mkdir -p $(dir $@)

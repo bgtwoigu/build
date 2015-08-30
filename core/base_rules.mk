@@ -160,7 +160,7 @@ ifndef LOCAL_UNINSTALLABLE_MODULE
 # Define a copy rule to install the module.
 $(LOCAL_INSTALLED_MODULE): $(LOCAL_BUILT_MODULE)
 	@echo "Install: $@"
-	$(copy-file-to-target-with-cp)
+	$(copy-file-to-new-target-with-cp)
 endif # LOCAL_UNINSTALLABLE_MODULE
 
 # -----------------------------------------------------------
