@@ -221,10 +221,14 @@ else # ONE_SHOT_MAKEFILE
 #
 # Include all of the makefiles in the system
 #
-
+# We Don't directly include such files as following:
+# devtools - include development tools.
+# device - include device specific files.
+# vendor - include vendor specific files.
 subdir_makefiles := \
     $(shell build/tools/miscs/findleaves.py \
     --prune=$(OUT_DIR) --prune=.repo --prune=.git \
+    --prune=devtools --prune=vendor --prune=device \
     $(subdirs) Yudatun.mk)
 
 $(foreach mk, $(subdir_makefiles), \

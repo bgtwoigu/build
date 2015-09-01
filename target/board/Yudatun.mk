@@ -6,4 +6,4 @@
 # published by the Free Software Foundation
 #
 
-include $(TARGET_DEVICE_DIR)/YudatunBoard.mk
+-include $(TARGET_DEVICE_DIR)/YudatunBoard.mk
