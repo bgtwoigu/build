@@ -22,12 +22,6 @@ BUG          = pt.BUG
 
 BYTES_PER_SECTOR = pt.BYTES_PER_SECTOR
 
-def sectors_till_boundary(current_lba, boundary_in_kb):
-  boundary_in_sectors = pt.kb2sectors(boundary_in_kb)
-  if boundary_in_kb > 0 and current_lba % boundary_in_sectors > 0:
-    return boundary_in_sectors - (current_lba % boundary_in_sectors)
-  return 0
-
 # A8h reflected is 15h, i.e. 10101000 <--> 00010101
 def reflect(data, bits):
   reflection = 0x00000000
@@ -81,7 +75,7 @@ class GPTHeader(object):
       self.current_lba           = 0
       self.backup_lba            = 1
     self.first_lba             = 0x0000000000000022  # 34
-    self.last_lba              = 0x0000000000000000  # 0
+    self.last_lba              = 0x0000000000000000  # 0 *
     self.disk_guid             = 0x200C003DB32B6EA04BF2BBE298101B32  # *
     if is_primary is True:
       self.entry_array_start_lba = 0x0000000000000002
@@ -138,8 +132,10 @@ class GPTHeader(object):
       self.array[i] = (self.entry_array_crc32 >> (b * 8)) & 0xFF
       i += 1
 
-  def update(self, entry_number, entry_array_crc32):
-    if entry_number is not None:
+  def update(self, last_lba, entry_number, entry_array_crc32):
+    if last_lba is not None and last_lba > 0:
+      self.last_lba = last_lba
+    if entry_number is not None and entry_number > 0:
       self.entry_number = entry_number
     if entry_array_crc32 is not None:
       self.entry_array_crc32 = entry_array_crc32
@@ -251,8 +247,8 @@ class PrimaryGPT(object):
 
     return my_crc32(array, entry_number * entry_size)
 
-  def update_gpt_header(self, entry_number, entry_array_crc32):
-    self.gpt_header.update(entry_number, entry_array_crc32)
+  def update_gpt_header(self, last_lba, entry_number, entry_array_crc32):
+    self.gpt_header.update(last_lba, entry_number, entry_array_crc32)
     self.gpt_header.toarray()
 
 class SecondaryGPT(object):
@@ -266,8 +262,8 @@ class SecondaryGPT(object):
     self.entry_array_addr = 0
     self.gpt_header_addr  = 32 * BYTES_PER_SECTOR
 
-  def update_gpt_header(self, entry_number, entry_array_crc32):
-    self.gpt_header.update(entry_number, entry_array_crc32)
+  def update_gpt_header(self, last_lba, entry_number, entry_array_crc32):
+    self.gpt_header.update(last_lba, entry_number, entry_array_crc32)
     self.gpt_header.toarray()
 
   def toarray(self):
@@ -311,8 +307,10 @@ class GPTPartitionTable(object):
   def init_primary_gpt(self):
     first_lba = self.primary_gpt.first_partition_lba
     last_lba  = first_lba
-    sectors_till_next_bd = 0
-    wp_in_sectors = pt.kb2sectors(INSTRUCTIONS.WRITE_PROTECT_BOUNDARY_IN_KB)
+    sectors_till_next_bulk = 0
+
+    kb_per_bulk = INSTRUCTIONS.WRITE_PROTECT_BULK_SIZE_IN_KB
+    sectors_per_bulk = pt.kb2sectors(kb_per_bulk)
 
     print '='*60
     print '| PartName    Size(KB)  Readonly FirstLBA  LastLBA'
@@ -320,34 +318,27 @@ class GPTPartitionTable(object):
 
     for i in range(len(PARTITIONS.part_list)):
 
-      part    = PARTITIONS.part_list[i]
-      wp_part = PARTITIONS.wp_part_list[PARTITIONS.current_wp_part]
+      part = PARTITIONS.part_list[i]
+      last_wp_chunk = PARTITIONS.wp_chunk_list[-1]
 
-      if INSTRUCTIONS.align_to_pb():
-        sectors_till_next_bd = sectors_till_boundary(first_lba, \
-                                    INSTRUCTIONS.PERFORMANCE_BOUNDARY_IN_KB)
-        if sectors_till_next_bd > 0:
-          first_lba += sectors_till_next_bd
-
-      if INSTRUCTIONS.WRITE_PROTECT_BOUNDARY_IN_KB > 0:
-        sectors_till_next_bd = sectors_till_boundary(first_lba, \
-                                    INSTRUCTIONS.WRITE_PROTECT_BOUNDARY_IN_KB)
+      if kb_per_bulk > 0:
+        sectors_till_next_bulk = pt.sectors_till_next_bulk(first_lba, kb_per_bulk)
 
       if part.readonly is True:
         # To be here means this partition is read-only, so see if
-        # we need to move the start
-        if first_lba > wp_part.end_sector:
-          first_lba += sectors_till_next_bd
-        PARTITIONS.update_wp_part(first_lba, part.size, wp_in_sectors)
+        # we need to move the start lba
+        if first_lba > last_wp_chunk.end_sector:
+          first_lba += sectors_till_next_bulk
+        PARTITIONS.update_wp_chunk_list(first_lba, part.size, sectors_per_bulk)
       else:
         # To be here means this partition is writeable, so see if
         # we need to move the start
-        if first_lba <= wp_part.end_sector:
-          first_lba += sectors_till_next_bd
+        if first_lba <= last_wp_chunk.end_sector:
+          first_lba += sectors_till_next_bulk
 
       # The last partition
       if (i + 1) == len(PARTITIONS.part_list) and \
-         INSTRUCTIONS.GROW_LAST_PARTITION_TO_FILL_DISK:
+         INSTRUCTIONS.AUTO_GROW_LAST_PARTITION is True:
         part.size_in_kb = part.size = 0 # Infinite huge
 
       # Increase by number of sectors, last lba inclusive, so add 1 for size.
@@ -387,6 +378,11 @@ class GPTPartitionTable(object):
       first_lba = last_lba + 1
       last_lba  = first_lba
 
+    if INSTRUCTIONS.AUTO_GROW_LAST_PARTITION is False:
+      last_lba += 32 # 33 - 1 (Size of Secondary GPT - 1)
+    else:
+      last_lba = 0x0
+
     # Calculate to the numbers of entry items into array.
     real_entry_number = len(PARTITIONS.part_list)
     entry_number = 0
@@ -398,17 +394,56 @@ class GPTPartitionTable(object):
         entry_number += 4
     entry_array_crc32 = self.primary_gpt.entry_array_crc32(entry_number)
 
-    self.primary_gpt.update_gpt_header(entry_number, entry_array_crc32)
+    self.primary_gpt.update_gpt_header(last_lba, entry_number, \
+                                       entry_array_crc32)
     self.primary_gpt.toarray()
 
   def init_secondary_gpt(self):
     self.secondary_gpt.entry_array = self.primary_gpt.entry_array[:]
-    entry_number =  self.primary_gpt.gpt_header.entry_number
+    last_lba = self.primary_gpt.gpt_header.last_lba
+    entry_number = self.primary_gpt.gpt_header.entry_number
     entry_array_crc32 = self.primary_gpt.gpt_header.entry_array_crc32
-    self.secondary_gpt.update_gpt_header(entry_number, entry_array_crc32)
+    self.secondary_gpt.update_gpt_header(last_lba, entry_number, \
+                                         entry_array_crc32)
     self.secondary_gpt.toarray()
 
-  def create(self, image_file):
+  def create_gpt_both_bin(self, output_directory):
+    image_file = "%sgpt_both.bin" % output_directory
+
+    print
+    BUG.green("Create %s <-- Protective MBR + Primary GPT + Backup GPT." % image_file)
+    ofile = open(image_file, "wb")
+    for b in self.protective_mbr.array:
+      ofile.write(struct.pack("B", b))
+    for b in self.primary_gpt.array:
+      ofile.write(struct.pack("B", b))
+    for b in self.secondary_gpt.array:
+      ofile.write(struct.pack("B", b))
+    ofile.close()
+
+  def create_gpt_main_bin(self, output_directory):
+    image_file = "%sgpt_main.bin" % output_directory
+
+    print
+    BUG.green("Create %s <-- Protective MBR + Primary GPT." % image_file)
+    ofile = open(image_file, "wb")
+    for b in self.protective_mbr.array:
+      ofile.write(struct.pack("B", b))
+    for b in self.primary_gpt.array:
+      ofile.write(struct.pack("B", b))
+    ofile.close()
+
+  def create_gpt_backup_bin(self, output_directory):
+    image_file = "%sgpt_backup.bin" % output_directory
+
+    print
+    BUG.green("Create %s <-- Backup GPT." % image_file)
+    ofile = open(image_file, "wb")
+    for b in self.secondary_gpt.array:
+      ofile.write(struct.pack("B", b))
+    ofile.close()
+
+  def create(self, output_directory):
     self.init_protective_mbr()
     self.init_primary_gpt()
     self.init_secondary_gpt()
@@ -429,15 +464,8 @@ class GPTPartitionTable(object):
       % self.secondary_gpt.gpt_header.entry_array_crc32
     print '-'*60
 
-    print
-    BUG.green("Create %s <-- GPT Partition Table" % image_file)
-    ofile = open(image_file, "wb")
-    for b in self.protective_mbr.array:
-      ofile.write(struct.pack("B", b))
-    for b in self.primary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    for b in self.secondary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    ofile.close()
+    self.create_gpt_both_bin(output_directory)
+    self.create_gpt_main_bin(output_directory)
+    self.create_gpt_backup_bin(output_directory)
 
 GPT_PARTITION_TABLE = GPTPartitionTable()

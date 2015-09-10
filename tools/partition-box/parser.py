@@ -35,7 +35,6 @@ class Parser(object):
       elif e.tag == "parser_instructions":
         instruct_count += 1
         INSTRUCTIONS.text2expr(e.text)
-        INSTRUCTIONS.check_validate()
       elif e.tag == "physical_partition":
         phy_part_count += 1
       elif e.tag == "partition":
@@ -65,5 +64,17 @@ class Parser(object):
 
     if len(PARTITIONS.part_list) == 0:
       BUG.error("Empty tag (physical_partition) was detected.")
+
+    if (PARTITIONS._type is PARTITIONS.GPT_TYPE) and \
+       (INSTRUCTIONS.WRITE_PROTECT_GPT is True) and \
+       (INSTRUCTIONS.WRITE_PROTECT_BULK_SIZE_IN_KB != 0):
+      sectors_per_bulk = pt.kb2sectors(INSTRUCTIONS.WRITE_PROTECT_BULK_SIZE_IN_KB)
+      first_chunk = PARTITIONS.wp_chunk_list[0]
+      first_chunk.start_sector = 0
+      first_chunk.end_sector   = sectors_per_bulk - 1
+      first_chunk.num_sectors  = sectors_per_bulk
+      first_chunk.start_bulk   = first_chunk.start_sector / sectors_per_bulk
+      first_chunk.num_bulk     = first_chunk.num_sectors / sectors_per_bulk
+
 
 PARSER = Parser()

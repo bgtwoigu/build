@@ -10,7 +10,7 @@
 """
 Given a partition xml, produces an image with special partition table.
 
-Usage: mkpart [flags] partition.xml image_file
+Usage: mkpart [flags] partition.xml
 
   -x  (--xml) <partition.xml>
       The partition XML file for descript partition table.
@@ -60,23 +60,12 @@ def make(xml):
 
   PARSER.xml2object(xml)
 
-  if INSTRUCTIONS.GROW_LAST_PARTITION_TO_FILL_DISK is False:
-    PARTITIONS.count_min_sectors_needed()
-
   if PARTITIONS._type is PARTITIONS.GPT_TYPE:
     print "GPT GUID discovered in XML file, output will be GPT ..."
     print "Making GUID Partition table (GPT). %d partitions ...\n" \
       % len(PARTITIONS.part_list)
 
-    wp_in_sectors = pt.kb2sectors(INSTRUCTIONS.WRITE_PROTECT_BOUNDARY_IN_KB)
-    if INSTRUCTIONS.WRITE_PROTECT_GPT_PARTITION_TABLE is False:
-      PARTITIONS.update_wp_part(0, 0, wp_in_sectors)
-    else:
-      PARTITIONS.update_wp_part(0, wp_in_sectors, wp_in_sectors)
-
-    image_file = "%sgpt_both.bin" % OPTIONS.output_directory
-
-    GPT_PARTITION_TABLE.create(image_file)
+    GPT_PARTITION_TABLE.create(OPTIONS.output_directory)
 
   elif PARTITIONS._type is PARTITIONS.MBR_TYPE:
     print "MBR TYPE discovered in XML file, output will be MBR ..."

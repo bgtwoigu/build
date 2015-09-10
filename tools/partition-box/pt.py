@@ -52,29 +52,24 @@ def str2bool(s):
 def kb2sectors(kb):
   return int(kb * 1024 / BYTES_PER_SECTOR)
 
+def sectors_till_next_bulk(lba, kb_per_bulk):
+  sectors_per_bulk = kb2sectors(kb_per_bulk)
+  if sectors_per_bulk > 0 and \
+     (lba % sectors_per_bulk) > 0:
+    return sectors_per_bulk - (lba % sectors_per_bulk)
+
+  return 0
+
 ########################################
 
 class Instructions(object):
 
   def __init__(self):
-    self.WRITE_PROTECT_BOUNDARY_IN_KB = 65536  # 64 * 1024
-    self.WRITE_PROTECT_GPT_PARTITION_TABLE = False
-
-    self.SECTOR_SIZE_IN_BYTES = 512
-
-    self.PERFORMANCE_BOUNDARY_IN_KB = 0
-    self.ALIGN_PERFORMANCE_BOUNDARY_IN_KB = False
-
-    self.GROW_LAST_PARTITION_TO_FILL_DISK = False
-    self.USE_GPT_PARTITIONING = False
-    self.DISK_SIGNATURE = 0x00000000
-    self.ALIGN_BOUNDARY_IN_KB = self.WRITE_PROTECT_BOUNDARY_IN_KB
-
-  def align_to_pb(self):
-    if self.PERFORMANCE_BOUNDARY_IN_KB > 0 and \
-       self.ALIGN_PERFORMANCE_BOUNDARY_IN_KB is True:
-      return True
-    return False
+    self.WRITE_PROTECT_BULK_SIZE_IN_KB = 65536  # 64MB
+    self.WRITE_PROTECT_GPT             = False
+    self.SECTOR_SIZE_IN_BYTES          = 512
+    self.AUTO_GROW_LAST_PARTITION      = False
+    self.DISK_SIGNATURE                = 0x00000000
 
   def trim_spaces(self, text):
     # Trim the left of '=' spaces
@@ -96,24 +91,17 @@ class Instructions(object):
       if len(tmp) == 2:
         key   = tmp[0].strip()
         value = tmp[1].strip()
-        if key == 'WRITE_PROTECT_BOUNDARY_IN_KB':
+        if key == 'WRITE_PROTECT_BULK_SIZE_IN_KB':
           if str.isdigit(value):
-            self.WRITE_PROTECT_BOUNDARY_IN_KB = int(value)
-        elif key == 'WRITE_PROTECT_GPT_PARTITION_TABLE':
-          self.WRITE_PROTECT_GPT_PARTITION_TABLE = str2bool(value)
+            self.WRITE_PROTECT_BULK_SIZE_IN_KB = int(value)
+        elif key == 'WRITE_PROTECT_GPT':
+          self.WRITE_PROTECT_GPT = str2bool(value)
         elif key == 'SECTOR_SIZE_IN_BYTES':
           if str.isdigit(value):
             self.SECTOR_SIZE_IN_BYTES = int(value)
             BYTES_PER_SECTOR = self.SECTOR_SIZE_IN_BYTES
-        elif key == 'PERFORMANCE_BOUNDARY_IN_KB':
-          if str.isdigit(value):
-            self.PERFORMANCE_BOUNDARY_IN_KB = int(value)
-        elif key == 'ALIGN_PERFORMANCE_BOUNDARY_IN_KB':
-          self.ALIGN_PERFORMANCE_BOUNDARY_IN_KB = str2bool(value)
-        elif key == 'GROW_LAST_PARTITION_TO_FILL_DISK':
-          self.GROW_LAST_PARTITION_TO_FILL_DISK = str2bool(value)
-        elif key == 'USE_GPT_PARTITIONING':
-          self.USE_GPT_PARTITIONING = str2bool(value)
+        elif key == 'AUTO_GROW_LAST_PARTITION':
+          self.AUTO_GROW_LAST_PARTITION = str2bool(value)
         elif key == 'DISK_SIGNATURE':
           if str.isdigit(value):
             self.DISK_SIGNATURE = int(value, 16)
@@ -122,46 +110,18 @@ class Instructions(object):
       else:
         BUG.warn("Invalidate expression (%s)" % l)
 
-  def check_validate(self):
-    if self.align_to_pb() is False and \
-       (self.PERFORMANCE_BOUNDARY_IN_KB > 0 or \
-        self.ALIGN_PERFORMANCE_BOUNDARY_IN_KB is True):
-      BUG.warn("The PERFORMANCE_BOUNDARY_IN_KB %i KB, But " \
-               "ALIGN_PERFORMANCE_BOUNDARY_IN_KB is (%s)." \
-               % (self.PERFORMANCE_BOUNDARY_IN_KB, \
-                  str(self.ALIGN_PERFORMANCE_BOUNDARY_IN_KB)))
-
 INSTRUCTIONS = Instructions()
 
 ########################################
 
-class WriteProtectPartition(object):
+class WriteProtectChunk(object):
 
   def __init__(self):
-    self.reset()
-
-  def set(self, start, end, num_sectors, \
-          ph_part_num, bd_num, num_bd_covered):
-    self.start_sector = start
-    self.end_sector   = end
-    self.num_sectors  = num_sectors
-    self.phsical_partition_num  = ph_part_num
-    self.boundary_num           = bd_num
-    self.num_boundaries_covered = num_bd_covered
-
-  def reset(self):
-    self.set(0, 0, 0, 0, 0, 0)
-
-  def update(self, start, sectors, wp_in_sectors):
-    if wp_in_sectors <= 0:
-      return
-
-    self.boundary_num = start / wp_in_sectors
-    end_sector = start + sectors - 1
-    while end_sector > self.end_sector:
-      self.end_sector  += wp_in_sectors
-      self.num_sectors += wp_in_sectors
-      self.num_boundaries_covered = self.num_sectors / wp_in_sectors
+    self.start_sector = 0
+    self.end_sector   = 0
+    self.num_sectors  = 0
+    self.start_bulk   = 0
+    self.num_bulk     = 0
 
 ########################################
 
@@ -171,50 +131,38 @@ class Partitions(object):
   MBR_TYPE = "mbr"
 
   def __init__(self):
-    self._type              = None
-    self.part_list          = []
-    self.wp_part_list       = []
-    self.current_wp_part    = -1
-    self.min_sectors_needed = 0
+    self._type         = None
+    self.part_list     = []
+    self.wp_chunk_list = []
+    self.wp_chunk_list.append(WriteProtectChunk())
 
   def add_part(self, part):
     self.part_list.append(part)
 
-  def add_wp_part(self, wp_part):
-    self.wp_part_list.append(wp_part)
-    self.current_wp_part += 1
-
-  def update_wp_part(self, start, sectors, wp_in_sectors):
-    if wp_in_sectors <= 0:
-      return
-
-    if self.current_wp_part < 0:
-      wp_part = WriteProtectPartition()
-      wp_part.update(start, sectors, wp_in_sectors)
-      self.add_wp_part(wp_part)
-      return
-
+  def update_wp_chunk_list(self, start, sectors, sectors_per_bulk):
     start_sector = start - 1
-    current_wp_part = self.wp_part_list[self.current_wp_part]
-    if start_sector <= current_wp_part.end_sector:
-      current_wp_part.update(start, sectors, wp_in_sectors)
+    end_sector   = start + sectors - 1
+    last_wp_chunk = self.wp_chunk_list[-1]
+    if start_sector <= last_wp_chunk.end_sector:
+      # Current Write Protect Chunk already covers the start of this partition
+      # which needs to write protection. Bug current Write Protect Chunk
+      # is not big enough.
+      while end_sector > last_wp_chunk.end_sector:
+        last_wp_chunk.end_sector  += sectors_per_bulk
+        last_wp_chunk.num_sectors += sectors_per_bulk
+      last_wp_chunk.num_bulk = last_wp_chunk.num_sectors / sectors_per_bulk
     else:
-      wp_part = WriteProtectPartition()
-      wp_part.update(start, sectors, wp_in_sectors)
-      self.add_wp_part(wp_part)
-
-  def count_min_sectors_needed(self):
-    # To be here means we're not growing final partition.
-    # thereore, obey the sizes they've specified.
-    num_part = len(self.part_list)
-    if num_part > 4:
-      # MBR + num_part - 3(EBRs)
-      self.min_sectors_needed = 1 + (num_part - 3)
-    else:
-      self.min_sectors_needed = 1
-    for part in self.part_list:
-      print "label (%s) with (%d) sectors" % (part.label, part.size)
-      self.min_sectors_needed += part.size
+      # A new Write Protect Chunk needed.
+      new_wp_chunk = WriteProtectChunk()
+      new_wp_chunk.start_sector = start
+      new_wp_chunk.end_sector   = start + sectors_per_bulk - 1
+      new_wp_chunk.num_sectors  = sectors_per_bulk
+      while end_sector > new_wp_chunk.end_sector:
+        new_wp_chunk.end_sector  += sectors_per_bulk
+        new_wp_chunk.num_sectors += sectors_per_bulk
+      new_wp_chunk.start_bulk = new_wp_chunk.start_sector / sectors_per_bulk
+      new_wp_chunk.num_bulk   = new_wp_chunk.num_sectors / sectors_per_bulk
+      self.wp_chunk_list.append(new_wp_chunk)
 
 PARTITIONS = Partitions()
 
