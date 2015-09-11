@@ -404,12 +404,6 @@ $(ALL_C_CPP_ETC_OBJECTS): | all_copied_headers
 files: prebuilt \
        $(modules_to_install)
 
-.PHONY: kernel
-kernel: $(INSTALLED_KERNEL_TARGET)
-
-.PHONY: bootimage
-bootimage: $(INSTALLED_BOOTIMAGE_TARGET)
-
 .PHONY: initramfs
 initramfs: $(INSTALLED_INITRAMFS_TARGET)
 
@@ -425,21 +419,11 @@ systemimage: $(INSTALLED_SYSTEMIMAGE_TARGET)
 all_modules: $(ALL_MODULES)
 
 # -----------------------------------------------------------
-# Building a full system-- the default is to build yudatuncore
+# Building a full system -- the default is to build yudatuncore
 .PHONY: yudatuncore
 yudatuncore: \
     files \
     $(INSTALLED_INITRAMFS_TARGET) \
-
-# kernel
-ifeq (false, $(strip $(TARGET_NO_KERNEL)))
-yudatuncore: $(INSTALLED_KERNEL_TARGET)
-endif # TARGET_NO_KERNEL
-
-# boot.img
-ifeq (false, $(strip $(TARGET_NO_BOOTIMAGE)))
-yudatuncore: $(INSTALLED_BOOTIMAGE_TARGET)
-endif # TARGET_NO_BOOTIMAGE
 
 yudatun: yudatuncore
 
