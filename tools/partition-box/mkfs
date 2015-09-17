@@ -19,6 +19,9 @@ Usage: mkfs [flags] root_directory image_file
   -s  (--size) <image_size>
       The size of image.
 
+  -T  (--title) <title>
+      The title of image.
+
 """
 
 import os
@@ -29,6 +32,7 @@ import common
 OPTIONS = common.OPTIONS
 OPTIONS.fs_type = None
 OPTIONS.image_size = 0
+OPTIONS.image_title = None
 
 def putFatFile(image, src_file, dst_file):
   cmd = ["mcopy", "-s", "-Q", "-i", image, src_file, "::" + dst_file]
@@ -41,7 +45,7 @@ def putFatFile(image, src_file, dst_file):
   p.wait()
   assert p.returncode == 0, "couldn't insert %s into FAT image" % (src_file)
 
-def makeVfatFs(root, image, size=0, title="Yudatun",):
+def makeVfatFs(root, image, size=0, title="boot"):
   """Create a vfat filesystem image with all the files in the provided
   root directory. The size of the system, if not provided by the caller,
   will be 101% the size of the containing files"""
@@ -64,6 +68,9 @@ def makeVfatFs(root, image, size=0, title="Yudatun",):
 
   if os.path.exists(image):
     os.unlink(image)
+
+  if title is None:
+    title = "boot"
 
   cmd = ["mkdosfs", "-n", title, "-C", image, str(size/ 1024)]
   try:
@@ -90,15 +97,18 @@ def main(argv):
       else:
         raise ValueError("Cannot parse value %r for option %r - only "
                  "integers are allowd." % (arg, opt))
+    elif opt in ("-T", "--title"):
+      OPTIONS.image_title = arg
     else:
       return False
     return True
 
   args = common.parseOptions(argv, __doc__,
-                             extra_opts="t:s:",
+                             extra_opts="t:s:T:",
                              extra_long_opts=[
-                                 "type=",
-                                 "size=",
+                               "type=",
+                               "size=",
+                               "title=",
                              ],
                              extra_option_handler=option_handler)
   if len(args) != 2:
@@ -106,7 +116,7 @@ def main(argv):
     sys.exit(1)
 
   if OPTIONS.fs_type in ("vfat",):
-    makeVfatFs(args[0], args[1], OPTIONS.image_size)
+    makeVfatFs(args[0], args[1], OPTIONS.image_size, OPTIONS.image_title)
 
 if __name__ == '__main__':
   try:
