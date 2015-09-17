@@ -103,8 +103,7 @@ class Instructions(object):
         elif key == 'AUTO_GROW_LAST_PARTITION':
           self.AUTO_GROW_LAST_PARTITION = str2bool(value)
         elif key == 'DISK_SIGNATURE':
-          if str.isdigit(value):
-            self.DISK_SIGNATURE = int(value, 16)
+          self.DISK_SIGNATURE = int(value, 16)
         else:
           BUG.warn("Invalidate key (%s)" % key)
       else:
@@ -181,15 +180,17 @@ class Partition(object):
   PARTITION_BASIC_DATA_GUID = 0xC79926B7B668C0874433B9E5EBD0A0A2
 
   def __init__(self):
+    self.is_gpt    = False
+    self.is_mbr    = False
+
     self.filename    = ""
     self.sparse      = ""
-
-    self.bootable   = False
-    self.label      = ""
-    self.size_in_kb = 0  # KB
-    self.size       = 0  # sector
-    self._type      = ""
-    self.uniqueguid = ""
+    self.bootable    = False
+    self.label       = ""
+    self.size_in_kb  = 0  # KB
+    self.size_in_sec = 0  # sector
+    self._type       = ""
+    self.uniqueguid  = ""
     # Attributes
     self.readonly      = False
     self.hidden        = False
@@ -302,4 +303,4 @@ class Partition(object):
       else:
         BUG.warn("Invalidate key (%s)." % key)
 
-    self.size = kb2sectors(self.size_in_kb)
+    self.size_in_sec = kb2sectors(self.size_in_kb)

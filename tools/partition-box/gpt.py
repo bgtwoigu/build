@@ -284,24 +284,26 @@ class SecondaryGPT(object):
 class GPTPartitionTable(object):
 
   def __init__(self):
-    self.protective_mbr = mbr.MBRPartitionTable()
+    self.protective_mbr = mbr.MBR()
     self.primary_gpt    = PrimaryGPT()
     self.secondary_gpt  = SecondaryGPT()
 
   def init_protective_mbr(self):
-    ptable = [0] * 16
-    ptable[0]     = 0x00  # not bootable
-    ptable[1]     = 0x00  # head
-    ptable[2]     = 0x01  # sector
-    ptable[3]     = 0x00  # cylinder
-    ptable[4]     = 0xEE  # type
-    ptable[5]     = 0xFF  # head
-    ptable[6]     = 0xFF  # sector
-    ptable[7]     = 0xFF  # cylinder
-    ptable[8:12]  = [0x01, 0x00, 0x00, 0x00] # starting sector
-    ptable[12:16] = [0xFF, 0xFF, 0xFF, 0xFF] # starting sector
-    self.protective_mbr.set(None, INSTRUCTIONS.DISK_SIGNATURE, \
-                          None, ptable, None, None)
+    entry = mbr.Entry()
+    entry.bootable              = 0x00
+    entry.first_sector_head     = 0x00
+    entry.first_sector_sec_cy   = 0x01
+    entry.first_sector_cylinder = 0x00
+    entry.part_type             = 0xEE
+    entry.last_sector_head      = 0xFF
+    entry.last_sector_sec_cy    = 0xFF
+    entry.last_sector_cylinder  = 0xFF
+    entry.first_lba             = 0x00000001
+    entry.num_sectors           = 0xFFFFFFFF
+    entry.toarray()
+
+    self.protective_mbr.signature = INSTRUCTIONS.DISK_SIGNATURE
+    self.protective_mbr.add_entry(entry)
     self.protective_mbr.toarray()
 
   def init_primary_gpt(self):
@@ -329,7 +331,7 @@ class GPTPartitionTable(object):
         # we need to move the start lba
         if first_lba > last_wp_chunk.end_sector:
           first_lba += sectors_till_next_bulk
-        PARTITIONS.update_wp_chunk_list(first_lba, part.size, sectors_per_bulk)
+        PARTITIONS.update_wp_chunk_list(first_lba, part.size_in_sec, sectors_per_bulk)
       else:
         # To be here means this partition is writeable, so see if
         # we need to move the start
@@ -339,10 +341,10 @@ class GPTPartitionTable(object):
       # The last partition
       if (i + 1) == len(PARTITIONS.part_list) and \
          INSTRUCTIONS.AUTO_GROW_LAST_PARTITION is True:
-        part.size_in_kb = part.size = 0 # Infinite huge
+        part.size_in_kb = part.size_in_sec = 0 # Infinite huge
 
       # Increase by number of sectors, last lba inclusive, so add 1 for size.
-      last_lba = first_lba + part.size
+      last_lba = first_lba + part.size_in_sec
       # Inclusive, meaning 0 to 3 is 4 sectors, or another way,
       # last lba must be odd.
       last_lba -= 1
@@ -410,38 +412,32 @@ class GPTPartitionTable(object):
   def create_gpt_both_bin(self, output_directory):
     image_file = "%sgpt_both.bin" % output_directory
 
-    print
     BUG.green("Create %s <-- Protective MBR + Primary GPT + Backup GPT." % image_file)
-    ofile = open(image_file, "wb")
-    for b in self.protective_mbr.array:
-      ofile.write(struct.pack("B", b))
-    for b in self.primary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    for b in self.secondary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    ofile.close()
+    with open(image_file, "wb") as f:
+      for b in self.protective_mbr.array:
+        f.write(struct.pack("B", b))
+      for b in self.primary_gpt.array:
+        f.write(struct.pack("B", b))
+      for b in self.secondary_gpt.array:
+        f.write(struct.pack("B", b))
 
   def create_gpt_main_bin(self, output_directory):
     image_file = "%sgpt_main.bin" % output_directory
 
-    print
     BUG.green("Create %s <-- Protective MBR + Primary GPT." % image_file)
-    ofile = open(image_file, "wb")
-    for b in self.protective_mbr.array:
-      ofile.write(struct.pack("B", b))
-    for b in self.primary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    ofile.close()
+    with open(image_file, "wb") as f:
+      for b in self.protective_mbr.array:
+        f.write(struct.pack("B", b))
+      for b in self.primary_gpt.array:
+        f.write(struct.pack("B", b))
 
   def create_gpt_backup_bin(self, output_directory):
     image_file = "%sgpt_backup.bin" % output_directory
 
-    print
     BUG.green("Create %s <-- Backup GPT." % image_file)
-    ofile = open(image_file, "wb")
-    for b in self.secondary_gpt.array:
-      ofile.write(struct.pack("B", b))
-    ofile.close()
+    with open(image_file, "wb") as f:
+      for b in self.secondary_gpt.array:
+        f.write(struct.pack("B", b))
 
   def create(self, output_directory):
     self.init_protective_mbr()
@@ -467,5 +463,3 @@ class GPTPartitionTable(object):
     self.create_gpt_both_bin(output_directory)
     self.create_gpt_main_bin(output_directory)
     self.create_gpt_backup_bin(output_directory)
-
-GPT_PARTITION_TABLE = GPTPartitionTable()

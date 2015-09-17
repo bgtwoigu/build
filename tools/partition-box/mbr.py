@@ -7,88 +7,178 @@
 # published by the Free Software Foundation
 #
 
+import os
 import sys
+import struct
 
 import pt
 
-BUG = pt.BUG
+INSTRUCTIONS = pt.INSTRUCTIONS
+PARTITIONS   = pt.PARTITIONS
+BUG          = pt.BUG
 
 BYTES_PER_SECTOR = pt.BYTES_PER_SECTOR
 
-class MBRPartitionTable(object):
-
-  MAGIC_0 = 0x55
-  MAGIC_1 = 0xAA
+class Entry(object):
 
   def __init__(self):
-    self.code_addr      = 0x0
-    self.signature_addr = 0x1B8  # 440
-    self.reserve_addr   = 0x1BC  # 444
-    self.pt_addr        = 0x1BE  # 446
-    self.magic_0_addr   = 0x1FE  # 510
-    self.magic_1_addr   = 0x1FF  # 511
+    self.bootable              = 0x00
+    self.first_sector_head     = 0x00
+    self.first_sector_sec_cy   = 0x00 # 5~0 sector; 7~6 cylinder high bits
+    self.first_sector_cylinder = 0x00 # cylinder low bits
+    self.part_type             = 0x00
+    self.last_sector_head      = 0x00
+    self.last_sector_sec_cy    = 0x00
+    self.last_sector_cylinder  = 0x00
+    self.first_lba             = 0x00000000
+    self.num_sectors           = 0x00000000
 
-    self.code      = None
-    self.signature = None
-    self.reserve   = None
-    self.pt        = None
-    self.magic_0   = self.MAGIC_0
-    self.magic_1   = self.MAGIC_1
+    self.array = [0] * 16
 
-    self.array = [0] * BYTES_PER_SECTOR
+  def toarray(self):
+    i = 0
 
-  def set(self, code, signature, reserve, pt, magic_0, magic_1):
+    self.array[i] = self.bootable;              i += 1
+    self.array[i] = self.first_sector_head;     i += 1
+    self.array[i] = self.first_sector_sec_cy;   i += 1
+    self.array[i] = self.first_sector_cylinder; i += 1
+    self.array[i] = self.part_type;             i += 1
+    self.array[i] = self.last_sector_head;      i += 1
+    self.array[i] = self.last_sector_sec_cy;    i += 1
+    self.array[i] = self.last_sector_cylinder;  i += 1
 
-    if code is not None:
-      if len(code) > 0 and len(code) <= 440:
-        self.code = []
-        for b in code:
-          self.code.append(b)
-      else:
-        BUG.error("Invalidate codes (%d)." % len(code))
+    for b in range(4):
+      self.array[i] = (self.first_lba >> (b * 8)) & 0xFF
+      i += 1
 
-    self.signature = signature
-    self.reserve = reserve
+    for b in range(4):
+      self.array[i] = (self.num_sectors >> (b * 8)) & 0xFF
+      i += 1
 
-    if pt is not None:
-      if len(pt) > 0 and len(pt) <= 64:
-        self.pt = []
-        for b in pt:
-          self.pt.append(b)
-      else:
-        BUG.error("Invalidate partitions (%d)." % len(pt))
+class MBR(object):
 
-    if magic_0 is not None:
-      self.magic_0 = magic_0
-    if magic_1 is not None:
-      self.magic_1 = magic_1
+  def __init__(self):
+    self.code_start        = 0x0
+    self.signature_start   = 0x1B8  # 440
+    self.reserve_start     = 0x1BC  # 444
+    self.entry_array_start = 0x1BE  # 446
+    self.magic_0_start     = 0x1FE  # 510
+    self.magic_1_start     = 0x1FF  # 511
+
+    self.code        = None
+    self.signature   = 0x00000000
+    self.reserve     = 0x0000
+    self.entry_array = []
+    self.magic_0     = 0x55
+    self.magic_1     = 0xAA
+
+    self.array = [0] * 512
+
+  def binfile2code(self, filename):
+    if filename is None:
+      return None
+
+    file_size = os.path.getsize(filename)
+    if file_size != 440 and file_size != 446:
+      BUG.error("Invalid boot code file (%s) for MBR" % filename)
+
+    self.code = [0] * file_size
+    with open(filename, 'rb') as f:
+      data = f.read(file_size)
+      i = 0
+      for b in data:
+        self.code[i] = ord(b); i += 1
+      f.close()
+
+  def add_entry(self, entry):
+    self.entry_array.append(entry)
 
   def toarray(self):
     i = 0
 
     if self.code is not None:
-      i = self.code_addr
+      i = self.code_start
       for b in self.code:
         self.array[i] = b
         i += 1
 
     if self.signature is not None:
-      i = self.signature_addr
+      i = self.signature_start
       self.array[i]   = (self.signature >> 24) & 0xFF
       self.array[i+1] = (self.signature >> 16) & 0xFF
-      self.array[i+3] = (self.signature >> 8)  & 0xFF
-      self.array[i+4] = (self.signature)       & 0xFF
+      self.array[i+2] = (self.signature >> 8)  & 0xFF
+      self.array[i+3] = (self.signature)       & 0xFF
 
     if self.reserve is not None:
-      i = self.reserve_addr
+      i = self.reserve_start
       self.array[i]   = (self.reserve >> 8) & 0xFF
       self.array[i+1] = (self.reserve)      & 0xFF
 
-    if self.pt is not None:
-      i = self.pt_addr
-      for b in self.pt:
-        self.array[i] = b
-        i += 1
+    if len(self.entry_array) > 0:
+      i = self.entry_array_start
+      for entry in self.entry_array:
+        for b in entry.array:
+          self.array[i] = b
+          i += 1
 
-    self.array[self.magic_0_addr] = self.magic_0
-    self.array[self.magic_1_addr] = self.magic_1
+    self.array[self.magic_0_start] = self.magic_0
+    self.array[self.magic_1_start] = self.magic_1
+
+  def init_partition_table(self, part_num):
+
+    kb_per_bulk = INSTRUCTIONS.WRITE_PROTECT_BULK_SIZE_IN_KB
+    sectors_per_bulk = pt.kb2sectors(kb_per_bulk)
+
+    first_lba = 1
+    last_lba  = 1
+
+    for i in range(part_num):
+
+      part = PARTITIONS.part_list[i]
+      last_wp_chunk = PARTITIONS.wp_chunk_list[-1]
+
+      part.readonly = True
+      PARTITIONS.update_wp_chunk_list(first_lba, part.size_in_sec, sectors_per_bulk)
+
+      entry = Entry()
+      if part.bootable is True:
+        entry.bootable = 0x80
+      else:
+        entry.bootable = 0x00
+      entry.part_type   = part._type
+      entry.first_lba   = first_lba
+      entry.num_sectors = part.size_in_sec
+      entry.toarray()
+
+      self.add_entry(entry)
+
+      last_lba += part.size_in_sec
+      first_lba = last_lba
+
+  def create(self, output_directory, boot_file, part_num):
+
+    image_file = "%sMBR.bin" % output_directory
+
+    self.binfile2code(boot_file)
+    self.signature = INSTRUCTIONS.DISK_SIGNATURE
+    self.init_partition_table(part_num)
+    self.toarray()
+
+    BUG.green("Create %s <-- Master Boot Recorder" % image_file)
+    with open(image_file, 'wb') as f:
+      for b in self.array:
+        f.write(struct.pack('B', b))
+
+class MBRPartitionTable(object):
+
+  def __init__(self):
+    self.mbr = MBR()
+    self.ebr = None
+
+  def create(self, output_directory, boot_file):
+    part_num = len(PARTITIONS.part_list)
+    if part_num <= 4:
+      print "We can get away with only an MBR"
+      self.mbr.create(output_directory, boot_file, part_num)
+    else:
+      print "We will need an MBR and %d EBRS" % (self.part_num - 3)

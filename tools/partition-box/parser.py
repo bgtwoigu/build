@@ -41,9 +41,9 @@ class Parser(object):
         if e.keys():
           part = pt.Partition()
           part.items2expr(e.items())
-          if part.is_gpt is True:
+          if part.is_gpt is True and part.is_mbr is False:
             PARTITIONS._type = PARTITIONS.GPT_TYPE
-          elif part.is_mbr is True:
+          elif part.is_gpt is False and part.is_mbr is True:
             PARTITIONS._type = PARTITIONS.MBR_TYPE
           else:
             BUG.error("Cannot defined the type of partition table.")
