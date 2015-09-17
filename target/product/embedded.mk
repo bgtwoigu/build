@@ -23,3 +23,9 @@ RC_FILES := \
     ueventd.rc \
 
 PRODUCT_PACKAGES += $(RC_FILES)
+
+HOST_TOOLS := \
+    mkbootfs \
+    flash \
+
+PRODUCT_PACKAGES += $(HOST_TOOLS)
