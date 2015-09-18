@@ -36,21 +36,22 @@ class Entry(object):
     self.array = [0] * 16
 
   def toarray(self):
-    i = 0
 
-    self.array[i] = self.bootable;              i += 1
-    self.array[i] = self.first_sector_head;     i += 1
-    self.array[i] = self.first_sector_sec_cy;   i += 1
-    self.array[i] = self.first_sector_cylinder; i += 1
-    self.array[i] = self.part_type;             i += 1
-    self.array[i] = self.last_sector_head;      i += 1
-    self.array[i] = self.last_sector_sec_cy;    i += 1
-    self.array[i] = self.last_sector_cylinder;  i += 1
+    self.array[0] = self.bootable;
+    self.array[1] = self.first_sector_head;
+    self.array[2] = self.first_sector_sec_cy;
+    self.array[3] = self.first_sector_cylinder;
+    self.array[4] = self.part_type;
+    self.array[5] = self.last_sector_head;
+    self.array[6] = self.last_sector_sec_cy;
+    self.array[7] = self.last_sector_cylinder;
 
+    i = 8
     for b in range(4):
       self.array[i] = (self.first_lba >> (b * 8)) & 0xFF
       i += 1
 
+    i = 12
     for b in range(4):
       self.array[i] = (self.num_sectors >> (b * 8)) & 0xFF
       i += 1
@@ -137,6 +138,11 @@ class MBR(object):
       part = PARTITIONS.part_list[i]
       last_wp_chunk = PARTITIONS.wp_chunk_list[-1]
 
+      if part.first_lba_in_kb > 0:
+        first_lba = pt.kb2sectors(part.first_lba_in_kb)
+      if first_lba < last_lba:
+        first_lba = last_lba
+
       part.readonly = True
       PARTITIONS.update_wp_chunk_list(first_lba, part.size_in_sec, sectors_per_bulk)
 
@@ -152,8 +158,7 @@ class MBR(object):
 
       self.add_entry(entry)
 
-      last_lba += part.size_in_sec
-      first_lba = last_lba
+      last_lba = first_lba + part.size_in_sec
 
   def create(self, output_directory, boot_file, part_num):
 

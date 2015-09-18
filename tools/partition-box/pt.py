@@ -183,15 +183,20 @@ class Partition(object):
     self.is_gpt    = False
     self.is_mbr    = False
 
-    self.filename    = ""
-    self.sparse      = ""
-    self.bootable    = False
-    self.label       = ""
-    self.size_in_kb  = 0  # KB
-    self.size_in_sec = 0  # sector
-    self._type       = ""
-    self.uniqueguid  = ""
-    # Attributes
+    # COMMON TAG
+    self.label           = ""
+    self.first_lba_in_kb = 0  # KB (MBR Only TAG)
+    self.size_in_kb      = 0  # KB
+    self.size_in_sec     = 0  # sector
+    self._type           = ""
+    self.filename        = ""
+    self.sparse          = ""
+
+    self.uniqueguid    = "" # GPT Only TAG
+    # MBR Attributes
+
+    self.bootable      = False
+    # GPT Attributes
     self.readonly      = False
     self.hidden        = False
     self.dontautomount = False
@@ -268,19 +273,17 @@ class Partition(object):
 
   def items2expr(self, items):
     for key, value in items:
-      if key == 'filename':
-        self.filename = value
-      elif key == 'sparse':
-        self.sparse = value
-      elif key == 'bootable':
-        self.bootable = str2bool(value)
-      elif key == 'label':
+
+      if key == 'label':
         self.label = value
+      elif key == 'first_lba_in_kb':
+        if str.isdigit(value):
+          self.first_lba_in_kb = int(value)
       elif key == 'size_in_kb':
         if str.isdigit(value):
           self.size_in_kb = int(value)
         else:
-          BUG.warn("Invalidate value (%s) for key (%s)" % (value, key))
+          BUG.warn("Invalid value (%s) for key (%s)" % (value, key))
       elif key == 'type':
         if self.is_validate_GUID(value) is True:
           self.is_gpt = True
@@ -289,9 +292,11 @@ class Partition(object):
           self.is_mbr = True
           self._type = self.validate_TYPE(value)
         else:
-          BUG.warn("Invalidate type (%s)." % value)
+          BUG.warn("Invalid type (%s)" % value)
       elif key == 'uniqueguid':
         self.uniqueguid = value
+      elif key == 'bootable':
+        self.bootable = str2bool(value)
       elif key == 'readonly':
         self.readonly = str2bool(value)
       elif key == 'hidden':
@@ -300,7 +305,11 @@ class Partition(object):
         self.dontautomount = str2bool(value)
       elif key == 'system':
         self.system = str2bool(value)
+      elif key == 'filename':
+        self.filename = value
+      elif key == 'sparse':
+        self.sparse = value
       else:
-        BUG.warn("Invalidate key (%s)." % key)
+        BUG.warn("Invalid key (%s)" % key)
 
     self.size_in_sec = kb2sectors(self.size_in_kb)
