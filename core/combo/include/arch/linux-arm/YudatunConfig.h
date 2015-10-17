@@ -62,7 +62,7 @@
 /*
  * Define if we're running on *our* linux on device or emulator.
  */
-#define HAVE_ANDROID_OS 1
+#define HAVE_YUDATUN_OS 1
 
 /*
  * Define if libc includes Android system properties implementation.
