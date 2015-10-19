@@ -39,16 +39,15 @@ $(foreach cf, $(unique_product_copy_files_pairs), \
 unique_product_copy_files_pairs :=
 unique_product_copy_files_destinations :=
 
-
-# -----------------------------------------------------------
+#------------------------------------------------------------
 # Targets for boot/OS images
-# -----------------------------------------------------------
+#------------------------------------------------------------
 
-#---------------------------------------------------------------------
-# the initramfs
+#------------------------------------------------------------
+# The initramfs image
 INTERNAL_INITRAMFS_FILES := $(filter $(TARGET_OUT_ROOT)/%, \
-    $(ALL_DEFAULT_INSTALLED_MODULES)) \
-    $(ALL_PREBUILT)
+    $(ALL_PREBUILT) \
+    $(ALL_DEFAULT_INSTALLED_MODULES))
 
 BUILT_INITRAMFS_TARGET := $(PRODUCT_OUT)/initramfs.img
 
@@ -65,3 +64,58 @@ $(INSTALLED_INITRAMFS_TARGET):
 ifeq (cpio, $(TARGET_INITRAMFS_IMAGE_FILESYSTEM))
 	$(hide) $(MKBOOTFS) $(TARGET_OUT_ROOT) | gzip -c > $@
 endif # TARGET_INITRAMFS_IMAGE_FILESYSTEM
+
+#-----------------------------------------------------------
+# The system image
+
+ifeq (ext4, $(strip $(TARGET_SYSTEMIMAGE_FILESYSTEM)))
+INTERNAL_SYSTEMIMAGE_DEPS := $(MKEXT4FS)
+endif
+INTERNAL_SYSTEMIMAGES_BINARY_PATH := $(sort $(dir $(INTERNAL_SYSTEMIMAGE_DEPS)))
+
+INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT_SYSTEM)/%, \
+    $(ALL_PREBUILT) \
+    $(ALL_DEFAULT_INSTALLED_MODULES))
+
+FULL_SYSTEMIMAGE_DEPS := \
+    $(INTERNAL_SYSTEMIMAGE_FILES) \
+    $(INTERNAL_SYSTEMIMAGE_DEPS)
+
+# installed file list
+INSTALLED_FILES_FILE := $(PRODUCT_OUT)/installed-files.txt
+$(INSTALLED_FILES_FILE): $(FULL_SYSTEMIMAGE_DEPS)
+	@echo "Installed file list: $@"
+	@mkdir -p $(dir $@)
+	@rm -f $@
+	$(hide) build/tools/misc/filelist.py $(TARGET_OUT_SYSTEM) > $@
+
+.PHONY: installed-file-list
+installed-file-list: $(INSTALLED_FILES_FILE)
+
+systemimage_intermediates := \
+    $(call intermediates-dir-for,PACKAGING,systemimage)
+BUILT_SYSTEMIMAGE_TARGET := $(systemimage_intermediates)/system.img
+
+define generate-systemimage-prop-file
+$(if $(strip $(TARGET_SYSTEMIMAGE_FILESYSTEM)), \
+  $(hide) echo "fs_type=$(TARGET_SYSTEMIMAGE_FILESYSTEM)" >> $(1))
+$(if $(strip $(TARGET_SYSTEMIMAGE_SIZE)), \
+  $(hide) echo "size=$(TARGET_SYSTEMIMAGE_SIZE)" >> $(1))
+endef
+
+define build-systemimage-target
+    @echo "Target system image: $(1)"
+    @mkdir -p $(dir $(1))
+    @mkdir -p $(systemimage_intermediates)
+    @rm -rf $(systemimage_intermediates)/systemimage_info.txt
+    $(call generate-systemimage-prop-file, \
+      $(systemimage_intermediates)/systemimage_info.txt)
+endef
+
+$(BUILT_SYSTEMIMAGE_TARGET): $(FULL_SYSTEMIMAGE_DEPS) $(INSTALLED_FILES_FILE)
+	$(call build-systemimage-target,$@)
+
+INSTALLED_SYSTEMIMAGE_TARGET := $(PRODUCT_OUT)/system.img
+
+$(INSTALLED_SYSTEMIMAGE_TARGET): $(BUILT_SYSTEMIMAGE_TARGET)
+	@echo "Install system image: $@"

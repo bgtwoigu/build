@@ -226,7 +226,7 @@ else # ONE_SHOT_MAKEFILE
 # device - include device specific files.
 # vendor - include vendor specific files.
 subdir_makefiles := \
-    $(shell build/tools/miscs/findleaves.py \
+    $(shell build/tools/misc/findleaves.py \
     --prune=$(OUT_DIR) --prune=.repo --prune=.git \
     --prune=devtools --prune=vendor --prune=device \
     $(subdirs) Yudatun.mk)
