@@ -68,9 +68,8 @@ endif # TARGET_INITRAMFS_IMAGE_FILESYSTEM
 #-----------------------------------------------------------
 # The system image
 
-ifeq (ext4, $(strip $(TARGET_SYSTEMIMAGE_FILESYSTEM)))
 INTERNAL_SYSTEMIMAGE_DEPS := $(MKEXT4FS)
-endif
+INTERNAL_SYSTEMIMAGE_DEPS += $(SIMG2IMG)
 INTERNAL_SYSTEMIMAGES_BINARY_PATH := $(sort $(dir $(INTERNAL_SYSTEMIMAGE_DEPS)))
 
 INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT_SYSTEM)/%, \
@@ -96,20 +95,43 @@ systemimage_intermediates := \
     $(call intermediates-dir-for,PACKAGING,systemimage)
 BUILT_SYSTEMIMAGE_TARGET := $(systemimage_intermediates)/system.img
 
-define generate-systemimage-prop-file
-$(if $(strip $(TARGET_SYSTEMIMAGE_FILESYSTEM)), \
-  $(hide) echo "fs_type=$(TARGET_SYSTEMIMAGE_FILESYSTEM)" >> $(1))
-$(if $(strip $(TARGET_SYSTEMIMAGE_SIZE)), \
-  $(hide) echo "size=$(TARGET_SYSTEMIMAGE_SIZE)" >> $(1))
-endef
+INTERNAL_SYSTEMIMAGE_ARGS := -v
+
+TARGET_SYSTEMIMAGE_SIZE := $(strip $(TARGET_SYSTEMIMAGE_SIZE))
+ifdef TARGET_SYSTEMIMAGE_SIZE
+  INTERNAL_SYSTEMIMAGE_ARGS += --size=$(TARGET_SYSTEMIMAGE_SIZE)
+endif
+
+TARGET_SYSTEMIMAGE_MOUNTPOINT := $(strip $(TARGET_SYSTEMIMAGE_MOUNTPOINT))
+ifdef TARGET_SYSTEMIMAGE_MOUNTPOING
+  INTERNAL_SYSTEMIMAGE_ARGS += --mount-point=$(TARGET_SYSTEMIMAGE_MOUNTPOINT)
+else
+  INTERNAL_SYSTEMIMAGE_ARGS += --mount-point=system
+endif
+
+ifeq (true, $(strip $(TARGET_SYSTEMIMAGE_GZIP)))
+  INTERNAL_SYSTEMIMAGE_ARGS += --gzip
+endif
+
+ifeq (true, $(strip $(TARGET_SYSTEMIMAGE_SPARSE)))
+  INTERNAL_SYSTEMIMAGE_ARGS += --sparse
+endif
+
+ifeq (true, $(strip $(TARGET_SYSTEMIMAGE_CRC)))
+  INTERNAL_SYSTEMIMAGE_ARGS += --crc
+endif
 
 define build-systemimage-target
     @echo "Target system image: $(1)"
     @mkdir -p $(dir $(1))
-    @mkdir -p $(systemimage_intermediates)
-    @rm -rf $(systemimage_intermediates)/systemimage_info.txt
-    $(call generate-systemimage-prop-file, \
-      $(systemimage_intermediates)/systemimage_info.txt)
+    $(hide) PATH=$(foreach p,$(INTERNAL_USERIMAGES_BINARY_PATHS),$(p):)$$PATH \
+      ./build/tools/partition-box/mkext4fs $(INTERNAL_SYSTEMIMAGE_ARGS) \
+        $(TARGET_OUT_SYSTEM) $(1) || \
+        (echo "Out of space? the tree size of $(TARGET_OUT_SYSTEM) is (MB): " 1>&2 ; \
+         du -sm $(TARGET_OUT_SYSTEM) 1>&2; \
+         maxsize=$(TARGET_SYSTEMIMAGE_SIZE); \
+         echo "The max is $$(( maxsize / 1048576 )) MB." 1>&2; \
+         exit 1)
 endef
 
 $(BUILT_SYSTEMIMAGE_TARGET): $(FULL_SYSTEMIMAGE_DEPS) $(INSTALLED_FILES_FILE)
@@ -119,3 +141,4 @@ INSTALLED_SYSTEMIMAGE_TARGET := $(PRODUCT_OUT)/system.img
 
 $(INSTALLED_SYSTEMIMAGE_TARGET): $(BUILT_SYSTEMIMAGE_TARGET)
 	@echo "Install system image: $@"
+	$(copy-file-to-target-with-cp)

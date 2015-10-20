@@ -424,6 +424,7 @@ all_modules: $(ALL_MODULES)
 yudatuncore: \
     files \
     $(INSTALLED_INITRAMFS_TARGET) \
+    $(INSTALLED_SYSTEMIMAGE_TARGET) \
 
 yudatun: yudatuncore
 
