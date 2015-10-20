@@ -8,8 +8,8 @@
 #
 
 """
-Given a root directory, produces an image with special filesystem.
-An image is produced if -t is given, otherwise print usages.
+Given a root directory, produces an image with vfat filesystem.
+Otherwise print usages.
 
 Usage: mkvfatfs [flags] root_directory image_file
 

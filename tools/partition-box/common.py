@@ -65,4 +65,18 @@ def run(args, **kwargs):
   line on the terminal if -v was specified."""
   if OPTIONS.verbose:
     print "  running: ", " ".join(args)
-    return subprocess.Popen(args, **kwargs)
+  return subprocess.Popen(args, **kwargs)
+
+def runCommand(cmd):
+  """Echo and run the given command.
+
+  Args:
+    cmd: the command represented as a list of strings.
+  Returns:
+    A tuple of the output and the exit code.
+  """
+  print "Running: ", " ".join(cmd)
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  output, _ = p.communicate()
+  print "%s" % (output.tstrip(),)
+  return (output, p.returncode)
