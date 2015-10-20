@@ -11,15 +11,12 @@
 Given a root directory, produces an image with special filesystem.
 An image is produced if -t is given, otherwise print usages.
 
-Usage: mkfs [flags] root_directory image_file
-
-  -t  (--type) <filesystem_type>
-      The filesystem type of image.
+Usage: mkvfatfs [flags] root_directory image_file
 
   -s  (--size) <image_size>
       The size of image.
 
-  -T  (--title) <title>
+  -t  (--title) <title>
       The title of image.
 
 """
@@ -30,7 +27,6 @@ import sys
 import common
 
 OPTIONS = common.OPTIONS
-OPTIONS.fs_type = None
 OPTIONS.image_size = 0
 OPTIONS.image_title = None
 
@@ -89,24 +85,21 @@ def makeVfatFs(root, image, size=0, title="boot"):
 def main(argv):
 
   def option_handler(opt, arg):
-    if opt in ("-t", "--type"):
-      OPTIONS.fs_type = arg
-    elif opt in ("-s", "--size"):
+    if opt in ("-s", "--size"):
       if arg.isdigit():
         OPTIONS.image_size = int(arg)
       else:
         raise ValueError("Cannot parse value %r for option %r - only "
                  "integers are allowd." % (arg, opt))
-    elif opt in ("-T", "--title"):
+    elif opt in ("-t", "--title"):
       OPTIONS.image_title = arg
     else:
       return False
     return True
 
   args = common.parseOptions(argv, __doc__,
-                             extra_opts="t:s:T:",
+                             extra_opts="s:t:",
                              extra_long_opts=[
-                               "type=",
                                "size=",
                                "title=",
                              ],
@@ -115,8 +108,7 @@ def main(argv):
     common.usage(__doc__)
     sys.exit(1)
 
-  if OPTIONS.fs_type in ("vfat",):
-    makeVfatFs(args[0], args[1], OPTIONS.image_size, OPTIONS.image_title)
+  makeVfatFs(args[0], args[1], OPTIONS.image_size, OPTIONS.image_title)
 
 if __name__ == '__main__':
   try:
