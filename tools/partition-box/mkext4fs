@@ -22,6 +22,9 @@ Usage: mkext4fs [flags] root_directory image_file
   -T  (--timestamp) <timestamp>
       The timestamp of image.
 
+  -l  (--label) <label>
+      The label of image.
+
   -Z  (--gzip)
       Generate image with gzip compressed.
 
@@ -42,6 +45,7 @@ OPTIONS = common.OPTIONS
 OPTIONS.image_size = None
 OPTIONS.mount_point = None
 OPTIONS.timestamp = None
+OPTIONS.label = None
 OPTIONS.gzip = False
 OPTIONS.sparse = False
 OPTIONS.crc = False
@@ -64,6 +68,8 @@ def makeExt4Fs(input_directory, output_file):
     cmd.extend(["-m", OPTIONS.mount_point])
   if OPTIONS.timestamp is not None:
     cmd.extend(["-T", OPTIONS.timestamp])
+  if OPTIONS.label is not None:
+    cmd.extend(["-l", OPTIONS.label])
   if OPTIONS.gzip is True:
     cmd.append("-Z")
   if OPTIONS.sparse is True:
@@ -91,6 +97,8 @@ def main(argv):
       OPTIONS.mount_point = arg
     elif opt in ("-T", "--timestamp"):
       OPTIONS.timestamp = arg
+    elif opt in ("-l", "--label"):
+      OPTIONS.label = arg
     elif opt in ("-Z", "--gzip"):
       OPTIONS.gzip = True
     elif opt in ("-S", "--sparse"):
@@ -102,11 +110,12 @@ def main(argv):
     return True
 
   args = common.parseOptions(argv, __doc__,
-                             extra_opts="s:m:T:ZSC",
+                             extra_opts="s:m:T:l:ZSC",
                              extra_long_opts=[
                                "size=",
                                "mount-point=",
                                "timestamp=",
+                               "label=",
                                "gzip",
                                "sparse",
                                "crc",
