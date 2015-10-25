@@ -423,8 +423,7 @@ all_modules: $(ALL_MODULES)
 .PHONY: yudatuncore
 yudatuncore: \
     files \
-    $(INSTALLED_INITRAMFS_TARGET) \
-    $(INSTALLED_SYSTEMIMAGE_TARGET) \
+    systemimage \
 
 yudatun: yudatuncore
 
