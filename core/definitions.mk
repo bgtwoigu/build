@@ -143,9 +143,7 @@ endef
 # $(1): target list
 #
 define module-installed-files
-  $(foreach module,$(1), \
-     $(ALL_MODULES.$(module).INSTALLED) \
-   )
+$(foreach module,$(1),$(ALL_MODULES.$(module).INSTALLED))
 endef
 
 # ------------------------------------------------------------
@@ -169,27 +167,6 @@ endef
 define modules-for-tag-list
 $(sort \
    $(foreach tag,$(1),$(ALL_MODULE_TAGS.$(tag))) \
- )
-endef
-
-# ------------------------------------------------------------
-# Expand a module name list with REQUIRED modules
-#
-# $(1): The variable name that holds the initial module name list.
-#       The variable will be modified to hold the expanded results.
-# $(2): The initial module name list.
-# Returns empty string (maybe with some whitespace).
-define expand-required-modules
-$(eval _erm_new_modules := \
-   $(sort \
-      $(filter-out $($(1)), \
-         $(foreach m,$(2),$(ALL_MODULES.$(m).REQUIRED)) \
-       ) \
-    ) \
- ) \
-$(if $(_erm_new_modules), \
-   $(eval $(1) += $(_erm_new_modules)) \
-   $(call expand-required-modules,$(1),$(_erm_new_modules)) \
  )
 endef
 

@@ -138,3 +138,7 @@ INSTALLED_SYSTEMIMAGE_TARGET := $(PRODUCT_OUT)/system.img
 $(INSTALLED_SYSTEMIMAGE_TARGET): $(BUILT_SYSTEMIMAGE_TARGET)
 	@echo "Install system image: $@"
 	$(copy-file-to-target-with-cp)
+
+#---------------------------------------
+# Specific image about device
+include $(BUILD_TARGET_BOARD)/Makefile

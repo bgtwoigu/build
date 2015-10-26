@@ -228,7 +228,7 @@ else # ONE_SHOT_MAKEFILE
 subdir_makefiles := \
     $(shell build/tools/misc/findleaves.py \
     --prune=$(OUT_DIR) --prune=.repo --prune=.git \
-    --prune=devtools --prune=vendor --prune=device \
+    --prune=devtools --prune=vendor \
     $(subdirs) Yudatun.mk)
 
 $(foreach mk, $(subdir_makefiles), \
@@ -329,6 +329,20 @@ add-required-deps :=
 #
 # Of the modules defined by the component makefiles,
 # determine what we actually want to build.
+
+###########################################################
+## Expand a module name list with REQUIRED modules
+###########################################################
+# $(1): The variable name that holds the initial module name list.
+#       the variable will be modified to hold the expanded results.
+# $(2): The initial module name list.
+# Returns empty string (maybe with some whitespaces).
+define expand-required-modules
+$(eval _erm_new_modules := $(sort $(filter-out $($(1)),\
+  $(foreach m,$(2),$(ALL_MODULES.$(m).REQUIRED)))))\
+$(if $(_erm_new_modules),$(eval $(1) += $(_erm_new_modules))\
+  $(call expand-required-modules,$(1),$(_erm_new_modules)))
+endef
 
 ifdef FULL_BUILD
   # The base list of modules to build for this product is specified

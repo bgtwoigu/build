@@ -32,6 +32,9 @@ SRC_HEADERS := \
 
 SRC_TARGET_DIR := $(TOPDIR)build/target
 
+BUILD_TARGET_BOARD := $(SRC_TARGET_DIR)/board
+BUILD_TARGET_PRODUCT := $(SRC_TARGET_DIR)/product
+
 # -------------------------------------------------------------
 # Build system internal files
 #
