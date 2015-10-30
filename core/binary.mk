@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Yudatun Open Source Project
+# Copyright (C) 2013 - 2015 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -17,9 +17,9 @@ include $(BUILD_SYSTEM)/base_rules.mk
 # The list of object files is exported in $(all_objects)
 # ------------------------------------------------------------
 
-# ------------------------------------------------------------
+#---------------------------------------
 # Compute the dependency of the shared libraries
-# ------------------------------------------------------------
+#---------------------------------------
 # On the target, we compile with -nostdlib, so we must add in the default
 # system shared libraries, unless they have requested not to by supplying a
 # LOCAL_SYSTEM_SHARED_LIBRARIES value. On would supply
@@ -34,7 +34,7 @@ else
   endif
 endif
 
-# ------------------------------------------------------------------
+#---------------------------------------
 # The following LOCAL_ variables will be modified in this file.
 # Because the same LOCAL_ variables may be used to define modules
 # for both 1st arch and and arch.
@@ -75,7 +75,7 @@ ifeq ($(USE_CLANG_PLATFORM_BUILD),true)
   endif
 endif # USE_CLANG_PLATFORM_BUILD
 
-#-------------------------------------------------------------------------------
+#---------------------------------------
 ifndef LOCAL_IS_HOST_MODULE
 
 my_src_files += \
@@ -119,7 +119,7 @@ my_cflags := $(filter-out $($(my_prefix)GLOBAL_UNSUPPORTED_CFLAGS),$(my_cflags))
 
 endif # !LOCAL_IS_HOST_MODULE
 
-#-------------------------------------------------------------------------------
+#-----------------------------------------------------------
 # add clang flags
 ifeq ($(strip $(LOCAL_ADDRESS_SANITIZER)),true)
   my_clang := true
@@ -148,7 +148,7 @@ ifeq ($(strip $(WITHOUT_$(my_prefix)CLANG)),true)
   my_clang :=
 endif
 
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 # Define PRIVATE_ variables from global vars
 #
 ifndef LOCAL_IS_HOST_MODULE
@@ -194,19 +194,19 @@ $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_HOST_GLOBAL_LDFLAGS := $(my_host_global_l
 
 endif
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 installed_shared_library_module_names := \
     $(my_system_shared_libraries) $(my_shared_libraries)
 installed_shared_library_module_names := $(sort $(installed_shared_library_module_names))
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # Define per-module debugging flags. Users can turn on
 # debugging for a particular module by setting
 # DEBUG_MODULE_ModuleName to a non-empty value in their
 # environment or buildspec.mk, and setting
 # HOST_/TARGET_CUSTOM_DEBUG_CFLAGS to the debug flags that
 # they want to use.
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 ifdef DEBUG_MODULE_$(strip $(LOCAL_MODULE))
   debug_cflags := $($(my_prefix)CUSTOM_DEBUG_CFLAGS)
 else
@@ -215,7 +215,7 @@ endif
 
 LOCAL_C_INCLUDES += $(TOPDIR)$(LOCAL_PATH) $(intermediates)
 
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 # Define PRIVATE_ variables used by multiple module types
 #
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_NO_DEFAULT_COMPILER_FLAGS := \
@@ -247,14 +247,14 @@ ifeq ($(LOCAL_CPP_EXTENSION),)
 endif
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_CPP_EXTENSION := $(LOCAL_CPP_EXTENSION)
 
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 ifeq (true,$(LOCAL_GROUP_STATIC_LIBRARIES))
 $(LOCAL_BUILT_MODULE) : PRIVATE_GROUP_STATIC_LIBRARIES := true
 else
 $(LOCAL_BUILT_MODULE) : PRIVATE_GROUP_STATIC_LIBRARIES :=
 endif
 
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 # Define arm-vs-thumb-mode flags
 #
 LOCAL_ARM_MODE := $(strip $(LOCAL_ARM_MODE))
@@ -279,9 +279,9 @@ normal_objects_cflags :=
 
 endif
 
-# ---------------------------------------------------------
+#-----------------------------------------------------------
 # S: Compile generated .S and .s files to .o.
-# ---------------------------------------------------------
+#-----------------------------------------------------------
 gen_S_sources := $(filter %.S,$(my_generated_sources))
 gen_S_objects := $(gen_S_sources:%.S=%.o)
 
@@ -304,14 +304,14 @@ endif
 
 gen_asm_objects := $(gen_S_objects) $(gen_s_objects)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # o: Include generated .o files in output.
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 gen_o_objects := $(filter %.o,$(my_generated_sources))
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # AS: Compile .S files to .o
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 
 asm_sources_S := $(filter %.S,$(my_src_files))
 asm_objects_S := $(addprefix $(intermediates)/,$(asm_sources_S:.S=.o))
@@ -337,9 +337,9 @@ endif
 
 asm_objects := $(asm_objects_S) $(asm_objects_s)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # C: Compile generated .c files to .o
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 gen_c_sources := $(filter %.c,$(LOCAL_GENERATED_SOURCES))
 gen_c_objects := $(gen_c_sources:%.c=%.o)
 ifneq ($(strip $(gen_c_objects)),)
@@ -348,9 +348,9 @@ $(gen_c_objects): $(intermediates)/%.o: $(intermediates)/%.c \
 	$(transform-$(PRIVATE_HOST)c-to-o)
 endif
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # C: Compile .c files to .o
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 c_arm_sources    := $(patsubst %.c.arm,%.c,$(filter %.c.arm,$(my_src_files)))
 c_arm_objects    := $(addprefix $(intermediates)/,$(c_arm_sources:.c=.o))
 
@@ -368,13 +368,14 @@ $(c_normal_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
 c_objects := $(c_arm_objects) $(c_normal_objects)
 
 ifneq ($(strip $(c_objects)),)
-$(c_objects): $(intermediates)/%.o: $(TOPDIR)$(LOCAL_PATH)/%.c
+$(c_objects): $(intermediates)/%.o: $(TOPDIR)$(LOCAL_PATH)/%.c \
+              $(LOCAL_ADDITIONAL_DEPENDENCIES)
 	$(transform-$(PRIVATE_HOST)c-to-o)
 endif
 
-# ---------------------------------------------------------
+#-----------------------------------------------------------
 # C++: Compile generated .cpp files to .o.
-# ---------------------------------------------------------
+#-----------------------------------------------------------
 gen_cpp_sources := $(filter %$(LOCAL_CPP_EXTENSION),$(my_generated_sources))
 gen_cpp_objects := $(gen_cpp_sources:%$(LOCAL_CPP_EXTENSION)=%.o)
 
@@ -390,9 +391,9 @@ $(gen_cpp_objects): $(intermediates)/%.o: \
 -include $(gen_cpp_objects:%.o=%.P)
 endif
 
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 # C++: Compile .cpp files to .o.
-# ------------------------------------------------------------
+#-----------------------------------------------------------
 
 # we also do this on host modules, even though
 # it's not really arm, because there are files that are shared.
@@ -417,11 +418,12 @@ $(cpp_objects): $(intermediates)/%.o: \
 -include $(cpp_objects:%.o=%.P)
 endif
 
-# ----------------------------------------------------------
+#-----------------------------------------------------------
 # Common object handling.
 #
-# some rules depend on asm_objects being first. If your code depends on
-# being first, it's reasonable to require it to be assembly.
+# some rules depend on asm_objects being first. If your code
+# depends on being first, it's reasonable to require it to be
+# assembly.
 #
 
 normal_objects := \
@@ -436,24 +438,26 @@ all_objects := \
 
 my_c_includes += $(TOPDIR)$(LOCAL_PATH) $(intermediates)
 
-# all_objects includes gen_o_objects which were part of LOCAL_GENERATED_SOURCES;
-# use normal_objects here to avoid creating circular dependencies. This assumes
-# that custom build rules which generate .o files don't consume other generated
-# sources as input (or if they do they take care of that dependency themselves).
+# all_objects includes gen_o_objects which were part of
+# LOCAL_GENERATED_SOURCES; use normal_objects here to avoid
+# creating circular dependencies. This assumes that custom
+# build rules which generate .o files don't consume other
+# generated sources as input (or if they do they take care of
+# that dependency themselves).
 $(normal_objects) : | $(LOCAL_GENERATED_SOURCES)
 $(all_objects) : $(import_includes)
 ALL_C_CPP_ETC_OBJECTS += $(all_objects)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # Copy headers to the install tree
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 include $(BUILD_COPY_HEADERS)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # Standard library handling
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # The list of libraries that this module will link against are
 # in these variables. Each is a list of bare module names like "libc libm"
 #
@@ -475,36 +479,36 @@ include $(BUILD_COPY_HEADERS)
 # a collection of .a files into a .so file. Linking against a normal
 # STATIC_LIBRARY will only pull in code/symbols that are
 # referenced by the module. (see gcc/ld's --whole-archive option)
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 
 # Get the list of BUILT libraries, which are under various
 # intermediates direcotries
 so_suffix := $($(my_prefix)SHARED_LIB_SUFFIX)
 a_suffix := $($(my_prefix)STATIC_LIB_SUFFIX)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 built_shared_libraries := \
   $(addprefix $($(my_prefix)OUT_INTERMEDIATE_LIBRARIES)/, \
       $(addsuffix $(so_suffix), \
           $(installed_shared_library_module_names)))
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 built_static_libraries := \
   $(foreach lib,$(my_static_libraries), \
       $(call intermediates-dir-for, \
           STATIC_LIBRARIES,$(lib),$(LOCAL_IS_HOST_MODULE))/$(lib)$(a_suffix) \
    )
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 built_whole_libraries := \
   $(foreach lib,$(my_whole_static_libraries), \
       $(call intermediates-dir-for, \
           STATIC_LIBRARIES,$(lib),$(LOCAL_IS_HOST_MODULE))/$(lib)$(a_suffix) \
     )
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # Rule-specific variable definitions
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 
 ifeq ($(my_clang),true)
 my_cflags += $(LOCAL_CLANG_CFLAGS)
@@ -533,7 +537,7 @@ $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_LDLIBS := $(LOCAL_LDLIBS)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_DEBUG_CFLAGS := $(debug_cflags)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_NO_CRT := $(strip $(LOCAL_NO_CRT)) $(LOCAL_NO_CRT_$(TARGET_ARCH))
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # this is really the way to get the files onto the command
 # line instead of using $^, because then LOCAL_ADDITIONAL_DEPENDENCIES
 # donesn't work
@@ -542,9 +546,9 @@ $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_ALL_STATIC_LIBRARIES := $(built_static_l
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_ALL_WHOLE_STATIC_LIBRARIES := $(built_whole_libraries)
 $(LOCAL_INTERMEDIATE_TARGETS) : PRIVATE_ALL_OBJECTS := $(all_objects)
 
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # Define library dependencies.
-# -----------------------------------------------------------
+#-----------------------------------------------------------
 # all_libraries is used for the dependencies on LOCAL_BUILT_MODULE.
 all_libraries := \
     $(built_shared_libraries) \

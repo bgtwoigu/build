@@ -33,6 +33,12 @@ else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+ifeq ($(strip $(TARGET_GLIBC_VERSION_EXP)),)
+TARGET_GLIBC_VERSION := 2.21
+else
+TARGET_GLIBC_VERSION := $(TARGET_GLIBC_VERSION_EXP)
+endif
+
 ifeq ($(strip $(TARGET_LINUX_EABI_PREFIX_EXP)),)
 TARGET_LINUX_EABI_PREFIX := arm-linux-gnueabi
 else
@@ -104,7 +110,15 @@ endif
 yudatun_config_h := $(call select-yudatun-config-h,linux-arm)
 
 TARGET_GLOBAL_CFLAGS += \
-    -msoft-float -fpic -fPIE \
+    -Wall \
+    -Winline \
+    -Wundef \
+    -Wwrite-strings \
+    -fmerge-all-constants \
+    -frounding-math \
+    -Wstrict-prototypes  \
+    -msoft-float \
+    -fPIC -fexceptions -fPIE \
     -ffunction-sections \
     -fdata-sections \
     -funwind-tables \
@@ -151,13 +165,23 @@ TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 # More flags/options can be added here
 TARGET_RELEASE_CFLAGS := \
     -DNDEBUG \
-    -g \
     -Wstrict-aliasing=2 \
     -fgcse-after-reload \
     -frerun-cse-after-loop \
     -frename-registers
 
-# -----------------------------------------------------------------
+#-----------------------------------------------------------
+# Target c includes
+glibc_root := thirdparty/glibc/glibc-$(TARGET_GLIBC_VERSION)
+
+TARGET_C_INCLUDES := \
+    $(TARGET_TOOLCHAIN_ROOT)/lib/gcc/arm-linux-gnueabi/5.1.0/include \
+    $(TARGET_TOOLCHAIN_ROOT)/lib/gcc/arm-linux-gnueabi/5.1.0/include-fixed \
+    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/usr/include \
+    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/arch/arm/include/generated \
+    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/include/generated
+
+#-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so
 ## do not run this command
 ifneq ($(wildcard $(TARGET_CC)),)
