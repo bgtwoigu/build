@@ -175,11 +175,8 @@ TARGET_RELEASE_CFLAGS := \
 glibc_root := thirdparty/glibc/glibc-$(TARGET_GLIBC_VERSION)
 
 TARGET_C_INCLUDES := \
-    $(TARGET_TOOLCHAIN_ROOT)/lib/gcc/arm-linux-gnueabi/5.1.0/include \
-    $(TARGET_TOOLCHAIN_ROOT)/lib/gcc/arm-linux-gnueabi/5.1.0/include-fixed \
-    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/usr/include \
-    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/arch/arm/include/generated \
-    $(TARGET_TOOLCHAIN_ROOT)/arm-linux-gnueabi/libc/include/generated
+    out/target/product/raspberrypi/obj/KERNEL_OBJ/usr/include \
+    out/target/product/raspberrypi/obj/include/glibc/include
 
 #-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so
