@@ -175,8 +175,8 @@ TARGET_RELEASE_CFLAGS := \
 glibc_root := thirdparty/glibc/glibc-$(TARGET_GLIBC_VERSION)
 
 TARGET_C_INCLUDES := \
-    out/target/product/raspberrypi/obj/KERNEL_OBJ/usr/include \
-    out/target/product/raspberrypi/obj/include/glibc/include
+    $(TARGET_OUT_INTERMEDIATE_KERNEL)/usr/include \
+    $(TARGET_OUT_INTERMEDIATE_HEADERS)/glibc/include
 
 #-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so
