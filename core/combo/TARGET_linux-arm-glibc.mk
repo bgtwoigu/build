@@ -172,11 +172,10 @@ TARGET_RELEASE_CFLAGS := \
 
 #-----------------------------------------------------------
 # Target c includes
-glibc_root := thirdparty/glibc/glibc-$(TARGET_GLIBC_VERSION)
+kernel_headers := $(TARGET_OUT_INTERMEDIATE_KERNEL)/usr/include
 
 TARGET_C_INCLUDES := \
-    $(TARGET_OUT_INTERMEDIATE_KERNEL)/usr/include \
-    $(TARGET_OUT_INTERMEDIATE_HEADERS)/glibc/include
+    $(kernel_headers)
 
 #-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so

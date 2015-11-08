@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Yudatun Open Source Project
+# Copyright (C) 2013 ~ 2015 The Yudatun Open Source Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -180,7 +180,7 @@ TARGET_OUT_INTERMEDIATES := $(PRODUCT_OUT)/obj
 TARGET_OUT_COMMON_INTERMEDIATES := $(TARGET_COMMON_OUT_ROOT)/obj
 TARGET_OUT_INTERMEDIATE_HEADERS := $(TARGET_OUT_INTERMEDIATES)/include
 TARGET_OUT_INTERMEDIATE_LIBRARIES := $(TARGET_OUT_INTERMEDIATES)/lib
-TARGET_OUT_INTERMEDIATE_KERNEL := $(TARGET_COMMON_OUT_ROOT)/KERNEL_OBJ
+TARGET_OUT_INTERMEDIATE_KERNEL := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
 
 #---------------------------------------
 # boot
