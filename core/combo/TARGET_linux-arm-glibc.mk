@@ -177,6 +177,14 @@ kernel_headers := $(TARGET_OUT_INTERMEDIATE_KERNEL)/usr/include
 TARGET_C_INCLUDES := \
     $(kernel_headers)
 
+# crt1.o crti.o crtn.o
+TARGET_CRTBEGIN_STATIC_O := \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtn.o
+TARGET_CRTBEGIN_DYNAMIC_O :=
+TARGET_CRTEND_O :=
+
 #-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so
 ## do not run this command
@@ -184,8 +192,9 @@ ifneq ($(wildcard $(TARGET_CC)),)
 # We compile with the global cflags to ensure that
 # any flags which affect libgcc are correctly taken
 # into account.
-TARGET_LIBGCC := $(shell $(TARGET_CC) \
-        $(TARGET_GLOBAL_CFLAGS) -print-libgcc-file-name)
+TARGET_LIBGCC := \
+    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a) \
+    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
 target_libgcov := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) \
         -print-file-name=libgcov.a)
 endif
@@ -240,21 +249,23 @@ $(hide) $(PRIVATE_CXX) -fPIE -pie \
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) \
-    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
-    -static \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
     -Wl,--gc-sections \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
+    $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
     $(PRIVATE_LDFLAGS) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
     $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
     -Wl,--no-whole-archive \
+    $(call normalize-target-libraries,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
     -Wl,--start-group \
-    $(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
+    $(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
     $(PRIVATE_TARGET_LIBGCC) \
     -Wl,--end-group
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
 endef
 
 define transform-o-to-shared-lib-inner
