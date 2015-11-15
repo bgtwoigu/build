@@ -173,9 +173,11 @@ TARGET_RELEASE_CFLAGS := \
 #-----------------------------------------------------------
 # Target c includes
 kernel_headers := thirdparty/kernel-headers/original/uapi/$(TARGET_ARCH)
+libc_headers := thirdparty/glibc/glibc-headers/$(TARGET_ARCH)
 
 TARGET_C_INCLUDES := \
-    $(kernel_headers)
+    $(kernel_headers) \
+    $(libc_headers)
 
 # crt1.o crti.o crtn.o
 TARGET_CRTBEGIN_STATIC_O := \
@@ -193,10 +195,8 @@ ifneq ($(wildcard $(TARGET_CC)),)
 # any flags which affect libgcc are correctly taken
 # into account.
 TARGET_LIBGCC := \
-    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a)
-LIBGCC_EH := \
+    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a) \
     $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
-TARGET_LIBGCC += $(LIBGCC_EH)
 endif
 
 define transform-o-to-executable-inner
@@ -221,7 +221,8 @@ $(hide) $(PRIVATE_CXX) -fPIE -pie \
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
+$(hide) $(PRIVATE_CXX) \
+    -nostdlib -Bstatic \
     -Wl,--gc-sections \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
@@ -242,10 +243,12 @@ endef
 
 define transform-o-to-shared-lib-inner
 $(hide) $(PRIVATE_CXX) \
+    -nostdlib -Wl,-soname,$(notdir $@) \
     -Wl,--gc-sections \
-    -shared \
     -Wl,-shared,-Bsymbolic \
+    -shared \
     $(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
     $(PRIVATE_ALL_OBJECTS) \
     -Wl,--whole-archive \
     $(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
@@ -257,5 +260,7 @@ $(hide) $(PRIVATE_CXX) \
     -o $@ \
     $(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
     $(PRIVATE_LDFLAGS) \
-    $(PRIVATE_TARGET_LIBGCC)
+    $(PRIVATE_TARGET_LIBGCC) \
+    $(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O)) \
+    $(PRIVATE_LDLIBS)
 endef
