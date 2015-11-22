@@ -195,7 +195,8 @@ ifneq ($(wildcard $(TARGET_CC)),)
 # any flags which affect libgcc are correctly taken
 # into account.
 TARGET_LIBGCC := \
-    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a) \
+    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a)
+TARGET_LIBGCC_EH := \
     $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
 endif
 
