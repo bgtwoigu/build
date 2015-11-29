@@ -186,6 +186,7 @@ TARGET_CRTBEGIN_STATIC_O := \
     $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtn.o
 TARGET_CRTBEGIN_DYNAMIC_O :=
 TARGET_CRTEND_O :=
+TARGET_LD-LINUX_SO := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/ld-linux.so
 
 #-----------------------------------------------------------
 ## on some hosts, the target cross-compiler is not available so

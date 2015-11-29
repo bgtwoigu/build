@@ -26,11 +26,15 @@ include $(BUILD_SYSTEM)/base_rules.mk
 # that, for example, when building libc itself.
 ifdef LOCAL_IS_HOST_MODULE
   ifeq ($(LOCAL_SYSTEM_SHARED_LIBRARIES),none)
-    LOCAL_SYSTEM_SHARED_LIBRARIES :=
+    my_system_shared_libraries :=
+  else
+    my_system_shared_libraries := $(LOCAL_SYSTEM_SHARED_LIBRARIES)
   endif
 else
   ifeq ($(LOCAL_SYSTEM_SHARED_LIBRARIES),none)
-    LOCAL_SYSTEM_SHARED_LIBRARIES := $(TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES)
+    my_system_shared_libraries := $(TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES)
+  else
+    my_system_shared_libraries := $(LOCAL_SYSTEM_SHARED_LIBRARIES)
   endif
 endif
 
