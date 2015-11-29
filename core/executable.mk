@@ -6,14 +6,14 @@
 # published by the Free Software Foundation
 #
 
-# ------------------------------------------------------------
+########################################
 # Standard rules for building an executable file.
 #
 # Additional inputs from base_rules.make:
 # None.
-# ------------------------------------------------------------
+########################################
 
-# ------------------------------------------------------------
+########################################
 ifeq ($(strip $(LOCAL_MODULE_CLASS)),)
 LOCAL_MODULE_CLASS := EXECUTABLES
 endif
@@ -22,11 +22,11 @@ ifeq ($(strip $(LOCAL_MODULE_SUFFIX)),)
 LOCAL_MODULE_SUFFIX := $(TARGET_EXECUTABLE_SUFFIX)
 endif
 
-# ------------------------------------------------------------
+########################################
 # Include dynamic_binary.mk
 include $(BUILD_SYSTEM)/dynamic_binary.mk
 
-# ------------------------------------------------------------
+########################################
 # Define PRIVATE_ variables from global vars
 
 my_target_ld-linux_so := $(TARGET_LD-LINUX_SO)
@@ -34,7 +34,7 @@ my_target_global_ld_dirs := $(TARGET_GLOBAL_LD_DIRS)
 my_target_global_ldflags := $(TARGET_GLOBAL_LDFLAGS)
 my_target_fdo_lib := $(TARGET_FDO_LIB)
 my_target_libgcc := $(TARGET_LIBGCC) $(TARGET_LIBGCC_EH)
-my_target_crtbegin_dynamic_o := $(TARGET_CRTBEIN_DYNAMIC_O)
+my_target_crtbegin_dynamic_o := $(TARGET_CRTBEGIN_DYNAMIC_O)
 my_target_crtbegin_static_o := $(TARGET_CRTBEGIN_STATIC_O)
 my_target_crtend_o := $(TARGET_CRTEND_O)
 $(linked_module) : PRIVATE_TARGET_GLOBAL_LD_DIRS := $(my_target_global_ld_dirs)

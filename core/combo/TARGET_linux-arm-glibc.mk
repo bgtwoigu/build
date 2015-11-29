@@ -118,7 +118,8 @@ TARGET_GLOBAL_CFLAGS += \
     -frounding-math \
     -Wstrict-prototypes  \
     -msoft-float \
-    -fPIC -fexceptions \
+    -fPIC \
+    -fexceptions \
     -ffunction-sections \
     -fdata-sections \
     -funwind-tables \
@@ -179,13 +180,17 @@ TARGET_C_INCLUDES := \
     $(kernel_headers) \
     $(libc_headers)
 
-# crt1.o crti.o crtn.o
+# crt1.o crti.o
 TARGET_CRTBEGIN_STATIC_O := \
     $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
+TARGET_CRTBEGIN_DYNAMIC_O := \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
+# crtn.o
+TARGET_CRTEND_O := \
     $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtn.o
-TARGET_CRTBEGIN_DYNAMIC_O :=
-TARGET_CRTEND_O :=
+
 TARGET_LD-LINUX_SO := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/ld-linux.so
 
 #-----------------------------------------------------------
@@ -228,7 +233,7 @@ $(hide) $(PRIVATE_CXX) \
 endef
 
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -pie \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic \
     -Wl,-dynamic-linker,/lib/ld-linux.so \
     -Wl,--gc-sections \
     -Wl,-z,nocopyreloc \
