@@ -182,33 +182,34 @@ TARGET_C_INCLUDES := \
 
 # crt1.o crti.o
 TARGET_CRTBEGIN_STATIC_O := \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
+  $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
+  $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
 TARGET_CRTBEGIN_DYNAMIC_O := \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
+  $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crt1.o \
+  $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crti.o
 # crtn.o
 TARGET_CRTEND_O := \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtn.o
+  $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtn.o
 
 TARGET_LD-LINUX_SO := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/ld-linux.so
 
-#-----------------------------------------------------------
-## on some hosts, the target cross-compiler is not available so
-## do not run this command
+########################################
+# on some hosts, the target cross-compiler
+# is not available so do not run this command
 ifneq ($(wildcard $(TARGET_CC)),)
 # We compile with the global cflags to ensure that
 # any flags which affect libgcc are correctly taken
 # into account.
 TARGET_LIBGCC := \
-    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a)
+  $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a)
 TARGET_LIBGCC_EH := \
-    $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
+  $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
 endif
 
 TARGET_STRIP_MODULE := true
 
 TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc
+TARGET_DEFAULT_SYSTEM_STATIC_LIBRARIES := libc_nonshared
 
 ########################################
 define transform-o-to-static-executable-inner

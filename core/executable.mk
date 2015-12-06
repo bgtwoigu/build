@@ -28,7 +28,6 @@ include $(BUILD_SYSTEM)/dynamic_binary.mk
 
 ########################################
 # Define PRIVATE_ variables from global vars
-
 my_target_ld-linux_so := $(TARGET_LD-LINUX_SO)
 my_target_global_ld_dirs := $(TARGET_GLOBAL_LD_DIRS)
 my_target_global_ldflags := $(TARGET_GLOBAL_LDFLAGS)
