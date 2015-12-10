@@ -168,9 +168,11 @@ $(my_register_name): $(LOCAL_BUILT_MODULE) $(LOCAL_INSTALLED_MODULE)
 
 ifndef LOCAL_UNINSTALLABLE_MODULE
 # Define a copy rule to install the module.
+$(LOCAL_INSTALLED_MODULE): PRIVATE_POST_INSTALL_CMD := $(LOCAL_POST_INSTALL_CMD)
 $(LOCAL_INSTALLED_MODULE): $(LOCAL_BUILT_MODULE)
 	@echo "Install: $@"
 	$(copy-file-to-new-target-with-cp)
+	$(PRIVATE_POST_INSTALL_CMD)
 endif # LOCAL_UNINSTALLABLE_MODULE
 
 # -----------------------------------------------------------

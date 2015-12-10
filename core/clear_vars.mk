@@ -6,7 +6,7 @@
 # published by the Free Software Foundation
 #
 
-#-------------------------------------------------------------
+########################################
 # Clear out values of all varables used by rule templates.
 #
 
@@ -52,8 +52,9 @@ LOCAL_STRIP_MODULE :=
 LOCAL_PREBUILT_MODULE_FILE :=
 LOCAL_PREBUILT_STRIP_COMMENTS :=
 LOCAL_ARM_MODE :=
+LOCAL_POST_INSTALL_CMD :=
 
-# ------------------------------------------------------------
+########################################
 LOCAL_SRC_FILES_$(TARGET_ARCH) :=
 LOCAL_CFLAGS_$(TARGET_ARCH) :=
 LOCAL_CPPFLAGS_$(TARGET_ARCH):=
@@ -67,7 +68,7 @@ LOCAL_WHOLE_STATIC_LIBRARIES_$(TARGET_ARCH):=
 LOCAL_GENERATED_SOURCES_$(TARGET_ARCH):=
 LOCAL_REQUIRED_MODULES_$(TARGET_ARCH):=
 
-#-------------------------------------------------------------
+########################################
 LOCAL_SRC_FILES_32:=
 LOCAL_SRC_FILES_64:=
 LOCAL_SHARED_LIBRARIES_32:=
@@ -93,11 +94,11 @@ LOCAL_MODULE_PATH_64:=
 LOCAL_MODULE_STEM_32:=
 LOCAL_MODULE_STEM_64:=
 
-#-------------------------------------------------------------
+########################################
 LOCAL_COPY_HEADERS_TO :=
 LOCAL_COPY_HEADERS :=
 
-#------------------------------------------------------------
+########################################
 # About clang
 LOCAL_CLANG :=
 LOCAL_CLANG_32 :=
@@ -130,7 +131,7 @@ LOCAL_CLANG_LDFLAGS_$(TARGET_ARCH):=
 LOCAL_CLANG_LDFLAGS_32:=
 LOCAL_CLANG_LDFLAGS_64:=
 
-# ------------------------------------------------------------
+########################################
 # Trim MAKEFILE_LIST so that $(call my-dir) doesn't need to
 # iterate over thousands of entries every time.
 # Leave the current makefile to make sure we don't break anything
