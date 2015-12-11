@@ -12,9 +12,12 @@
 # part of the tree.
 
 PRODUCT_PACKAGES := \
-    init \
+    ld-linux \
     libc \
-    libcutils \
+    libm \
+    libpthread \
+    init \
+    libcutils
 
 # rc
 PRODUCT_PACKAGES += \

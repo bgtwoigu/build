@@ -209,7 +209,7 @@ endif
 TARGET_STRIP_MODULE := true
 
 TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc
-TARGET_DEFAULT_SYSTEM_STATIC_LIBRARIES := libc_nonshared
+TARGET_DEFAULT_SYSTEM_STATIC_LIBRARIES := libc_nonshared libpthread_nonshared
 
 ########################################
 define transform-o-to-static-executable-inner
