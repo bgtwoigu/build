@@ -17,7 +17,8 @@ PRODUCT_PACKAGES := \
     libm \
     libpthread \
     init \
-    libcutils
+    libcutils \
+    busybox
 
 # rc
 PRODUCT_PACKAGES += \
