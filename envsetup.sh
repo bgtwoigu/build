@@ -459,55 +459,6 @@ function yudatun_upload()
     git push ssh://yudatun@review.gerrithub.io:29418/yudatun/$1 HEAD:refs/for/$2
 }
 
-function emulator-pb()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -M versatilepb -m 128M \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init"
-}
-
-function emulator-a9()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init"
-}
-
-function emulator-nographic-pb()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -nographic -M versatilepb -m 128M \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init console=ttyAMA0"
-}
-
-function emulator-nographic-a9()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -nographic -M vexpress-a9 -m 1024M -cpu cortex-a9 \
-        -kernel $1 \
-        -initrd $2 \
-        -append "root=/dev/ram rdinit=/init console=ttyAMA0"
-}
-
-function emulator-a9-serial()
-{
-    check_path qemu-system-arm
-
-    qemu-system-arm -M vexpress-a9 -m 1024M -cpu cortex-a9 \
-        -kernel $1 -initrd $2 \
-        -serial stdio -append "console=ttyAMA0"
-}
-
 function create_flash_image()
 {
     dd if=/dev/zero of=flash.bin bs=1 count=6M
@@ -516,9 +467,28 @@ function create_flash_image()
     dd if=initramfs.img of=flash.bin conv=notrunc bs=1 seek=4M
 }
 
-function gdbserver-a9()
+function emulator()
 {
-    qemu-system-arm -d in_asm -M vexpress-a9 -m 1024 -cpu cortex-a9 -kernel $1 -serial stdio -s -S
+    check_path qemu-system-arm
+
+    qemu-system-arm -kernel $1 \
+        -cpu arm1176 -m 256 -M versatilepb \
+        -no-reboot -serial stdio \
+        -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash" \
+        -hda $2
+
+}
+
+function emulator-debug()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -kernel $1 \
+        -cpu arm1176 -m 256 -M versatilepb \
+        -no-reboot -serial stdio \
+        -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash" \
+        -hda $2 -s -S
+
 }
 
 if [ "x$SHELL" != "x/bin/bash" ] ; then
