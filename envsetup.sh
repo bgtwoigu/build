@@ -479,6 +479,17 @@ function emulator()
 
 }
 
+function emulator-yudatun()
+{
+    check_path qemu-system-arm
+
+    qemu-system-arm -kernel $1 \
+        -cpu arm1176 -m 256 -M versatilepb \
+        -no-reboot -serial stdio \
+        -append "root=/dev/sda panic=0 rootfstype=ext4 rw console=ttyAMA0" \
+        -hda $2
+}
+
 function emulator-debug()
 {
     check_path qemu-system-arm
